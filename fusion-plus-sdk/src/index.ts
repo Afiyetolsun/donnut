@@ -1,4 +1,4 @@
-import { HashLock, SDK } from '@1inch/cross-chain-sdk';
+import { HashLock, SDK, PresetEnum, ReadyToAcceptSecretFills, ReadyToExecutePublicActions, OrderStatusResponse, OrderStatus } from '@1inch/cross-chain-sdk';
 import dotenv from 'dotenv';
 import { ethers } from 'ethers';
 
@@ -35,11 +35,6 @@ const receiverAddress = process.env.RECEIVER_ADDRESS;
 const nodeUrl = process.env.NODE_URL;
 const authKey = process.env.AUTH_KEY;
 
-if (!makerPrivateKey) throw new Error('MAKER_PRIVATE_KEY is not set in .env');
-if (!makerAddress) throw new Error('MAKER_ADDRESS is not set in .env');
-if (!receiverAddress) throw new Error('RECEIVER_ADDRESS is not set in .env');
-if (!nodeUrl) throw new Error('NODE_URL is not set in .env');
-if (!authKey) throw new Error('AUTH_KEY is not set in .env');
 
 async function main() {
   // Initialize ethers provider
@@ -59,7 +54,7 @@ async function main() {
     dstChainId: 10, // Optimism chain ID
     srcTokenAddress: '0xaf88d065e77c8cC2239327C5EDb3A432268e5831', // USDC on Arbitrum
     dstTokenAddress: '0x94b008aA00579c1307B0EF2c499aD98a8ce58e58', // USDT on Optimism
-    amount: '10000000', // 10 USDC (6 decimals)
+    amount: '950000', // 0.95 USDC (6 decimals)
     enableEstimate: true,
     walletAddress: makerAddress,
   };
@@ -72,22 +67,27 @@ async function main() {
     // Generate secrets and hash locks
     const secretsCount = quote.getPreset().secretsCount;
     const secrets = Array.from({ length: secretsCount }).map(() => ethers.utils.hexlify(ethers.utils.randomBytes(32)));
-    const secretHashes = secrets.map((x) => HashLock.hashSecret(x));
+    const secretHashes = secrets.map((s) => HashLock.hashSecret(s));
+
 
     const hashLock =
       secretsCount === 1
         ? HashLock.forSingleFill(secrets[0])
-        : HashLock.forMultipleFills(
-            secretHashes.map((secretHash, i) =>
-              ethers.utils.solidityKeccak256(['uint64', 'bytes32'], [i, secretHash]) as string & { _tag: 'MerkleLeaf' }
-            )
-          );
+        : 
+        // HashLock.forMultipleFills(
+        //     secretHashes.map((secretHash, i) =>
+        //       ethers.utils.solidityKeccak256(['uint64', 'bytes32'], [i, secretHash]) as string & { _tag: 'MerkleLeaf' }
+        //     )
+        HashLock.forMultipleFills(HashLock.getMerkleLeaves(secrets)
+      );
 
     // Place order
     console.log('Placing order...');
     const order = await sdk.placeOrder(quote, {
       walletAddress: makerAddress,
       receiver: receiverAddress,
+      preset: PresetEnum.fast,
+      source: 'sdk-tutorial',
       hashLock,
       secretHashes,
       // fee: {
@@ -96,11 +96,44 @@ async function main() {
       // },
     });
 
-    console.log('Order placed successfully:', order);
-  } catch (error) {
-    console.error("Error executing swap:", error);
-    // console.log("Response body:", error.response?.data);
+  const orderHash = order.orderHash;
+  console.log('▶️ OrderHash:', orderHash);
+
+  // 4) Wait for escrows & finality
+  let ready: ReadyToAcceptSecretFills;
+  do {
+    console.log('⏳ Waiting for escrows & finality...');
+    ready = await sdk.getReadyToAcceptSecretFills(orderHash);
+    await new Promise((r) => setTimeout(r, 5000));
+  } while (ready.fills.length === 0);
+
+  // 5) Reveal your secret(s) to unlock the escrows
+  for (const secret of secrets) {
+    console.log('🔓 Submitting secret:', secret);
+    await sdk.submitSecret(orderHash, secret);
   }
+
+  // 6) Monitor until the order reaches a terminal state
+  const terminalStates = [
+    OrderStatus.Executed,
+    OrderStatus.Expired,
+    OrderStatus.Cancelled,
+    OrderStatus.Refunded,
+  ];
+  let status: OrderStatus;
+  do {
+    const resp = await sdk.getOrderStatus(orderHash);
+    status = resp.status;
+    console.log('Status:', status);
+    if (terminalStates.includes(status)) break;
+    await new Promise((r) => setTimeout(r, 5000));
+  } while (true);
+
+  console.log('✅ Final status:', status);
+  } catch (error) {
+    console.error('❌ Error:', error);
+  }
+
 }
 
 main();
