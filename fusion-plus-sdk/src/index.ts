@@ -1,25 +1,50 @@
-import { HashLock, NetworkEnum, PrivateKeyProviderConnector, SDK, getRandomBytes32 } from '@1inch/cross-chain-sdk';
+import { HashLock, SDK } from '@1inch/cross-chain-sdk';
 import dotenv from 'dotenv';
-import Web3 from 'web3';
+import { ethers } from 'ethers';
+
+// Custom BlockchainProviderConnector for ethers
+class EthersBlockchainProvider {
+  private wallet: ethers.Wallet;
+
+  constructor(privateKey: string, provider: ethers.providers.JsonRpcProvider) {
+    this.wallet = new ethers.Wallet(privateKey, provider);
+  }
+
+  async signTypedData(walletAddress: string, typedData: any): Promise<string> {
+    // Extract primary type and remove EIP712Domain from types
+    const { domain, types, message } = typedData;
+    const { EIP712Domain, ...signTypes } = types; // Remove EIP712Domain
+    return this.wallet._signTypedData(domain, signTypes, message);
+  }
+
+  async ethCall(contractAddress: string, callData: string): Promise<string> {
+    return this.wallet.provider.call({
+      to: contractAddress,
+      data: callData,
+    });
+  }
+}
 
 // Load environment variables
 dotenv.config();
 
 // Validate environment variables
-const makerPrivateKey = process.env.MAKER_PRIVATE_KEY;
-const makerAddress = process.env.MAKER_ADDRESS;
+const makerPrivateKey = process.env.MAKER_PRIVATE_KEY || "";
+const makerAddress = process.env.MAKER_ADDRESS || "";
 const receiverAddress = process.env.RECEIVER_ADDRESS;
 const nodeUrl = process.env.NODE_URL;
 const authKey = process.env.AUTH_KEY;
 
-if (!makerPrivateKey || !makerAddress || !receiverAddress || !nodeUrl || !authKey) {
-  throw new Error('Missing required environment variables');
-}
+if (!makerPrivateKey) throw new Error('MAKER_PRIVATE_KEY is not set in .env');
+if (!makerAddress) throw new Error('MAKER_ADDRESS is not set in .env');
+if (!receiverAddress) throw new Error('RECEIVER_ADDRESS is not set in .env');
+if (!nodeUrl) throw new Error('NODE_URL is not set in .env');
+if (!authKey) throw new Error('AUTH_KEY is not set in .env');
 
 async function main() {
-  // Initialize Web3 and blockchain provider
-  const web3 = new Web3(nodeUrl);
-  const blockchainProvider = new PrivateKeyProviderConnector(makerPrivateKey, web3);
+  // Initialize ethers provider
+  const provider = new ethers.providers.JsonRpcProvider(nodeUrl);
+  const blockchainProvider = new EthersBlockchainProvider(makerPrivateKey, provider);
 
   // Initialize 1inch Fusion+ SDK
   const sdk = new SDK({
@@ -28,13 +53,13 @@ async function main() {
     blockchainProvider,
   });
 
-  // Define swap parameters
+  // Define swap parameters for 0.1 USDC on Arbitrum to USDT on Optimism
   const params = {
-    srcChainId: NetworkEnum.ETHEREUM,
-    dstChainId: NetworkEnum.GNOSIS,
-    srcTokenAddress: '0x6b175474e89094c44da98b954eedeac495271d0f', // DAI on Ethereum
-    dstTokenAddress: '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee', // Native token on Gnosis
-    amount: '1000000000000000000000', // 1000 DAI
+    srcChainId: 42161, // Arbitrum chain ID
+    dstChainId: 10, // Optimism chain ID
+    srcTokenAddress: '0xaf88d065e77c8cC2239327C5EDb3A432268e5831', // USDC on Arbitrum
+    dstTokenAddress: '0x94b008aA00579c1307B0EF2c499aD98a8ce58e58', // USDT on Optimism
+    amount: '10000000', // 10 USDC (6 decimals)
     enableEstimate: true,
     walletAddress: makerAddress,
   };
@@ -46,7 +71,7 @@ async function main() {
 
     // Generate secrets and hash locks
     const secretsCount = quote.getPreset().secretsCount;
-    const secrets = Array.from({ length: secretsCount }).map(() => getRandomBytes32());
+    const secrets = Array.from({ length: secretsCount }).map(() => ethers.utils.hexlify(ethers.utils.randomBytes(32)));
     const secretHashes = secrets.map((x) => HashLock.hashSecret(x));
 
     const hashLock =
@@ -54,7 +79,7 @@ async function main() {
         ? HashLock.forSingleFill(secrets[0])
         : HashLock.forMultipleFills(
             secretHashes.map((secretHash, i) =>
-              web3.utils.soliditySha3({ type: 'uint64', value: i }, { type: 'bytes32', value: secretHash }) as string & { _tag: 'MerkleLeaf' }
+              ethers.utils.solidityKeccak256(['uint64', 'bytes32'], [i, secretHash]) as string & { _tag: 'MerkleLeaf' }
             )
           );
 
@@ -65,15 +90,16 @@ async function main() {
       receiver: receiverAddress,
       hashLock,
       secretHashes,
-      fee: {
-        takingFeeBps: 100, // 1%
-        takingFeeReceiver: '0x0000000000000000000000000000000000000000',
-      },
+      // fee: {
+      //   takingFeeBps: 1, // 1%
+      //   takingFeeReceiver: makerAddress,
+      // },
     });
 
     console.log('Order placed successfully:', order);
   } catch (error) {
-    console.error('Error executing swap:', error);
+    console.error("Error executing swap:", error);
+    // console.log("Response body:", error.response?.data);
   }
 }
 
