@@ -1,0 +1,12 @@
+{
+  "name": "escrow-base-evm",
+  "version": "1.0.0",
+  "description": "This project contains two Solidity contracts, `FusionEscrowSource.sol` and `FusionEscrowDestination.sol`, which implement a basic cross-chain atomic swap system inspired by Hashed Timelock Contracts (HTLCs).",
+  "main": "hardhat.config.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
