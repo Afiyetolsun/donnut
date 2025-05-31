@@ -23,8 +23,9 @@ import {
 import Link from "next/link"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
-import { motion, AnimatePresence } from "framer-motion"
+import { motion, AnimatePresence, useAnimation } from "framer-motion"
 import { useRouter } from "next/navigation"
+import { useState, useCallback, useEffect, useMemo } from "react"
 
 const fadeInUp = {
   initial: { opacity: 0, y: 20 },
@@ -40,11 +41,193 @@ const staggerContainer = {
   }
 }
 
+// Add multilingual cheering phrases
+const cheerPhrases = [
+  // English
+  { text: "Keep creating! 🎨", lang: "en" },
+  { text: "Love your work! ❤️", lang: "en" },
+  { text: "Thanks for inspiring! ✨", lang: "en" },
+  { text: "For your amazing content! 🌟", lang: "en" },
+  // Russian
+  { text: "На развитие канала! 🎨", lang: "ru" },
+  { text: "Спасибо за контент! ❤️", lang: "ru" },
+  { text: "Продолжай творить! ✨", lang: "ru" },
+  { text: "За твое творчество! 🌟", lang: "ru" },
+  // German
+  { text: "Für deine Kreativität! 🎨", lang: "de" },
+  { text: "Mach weiter so! ❤️", lang: "de" },
+  { text: "Danke für die Inspiration! ✨", lang: "de" },
+  { text: "Für deine tolle Arbeit! 🌟", lang: "de" },
+  // Chinese
+  { text: "支持你的创作！🎨", lang: "zh" },
+  { text: "继续加油！❤️", lang: "zh" },
+  { text: "感谢分享！✨", lang: "zh" },
+  { text: "为你的精彩内容！🌟", lang: "zh" },
+  // Ukrainian
+  { text: "На розвиток проекту! 🎨", lang: "uk" },
+  { text: "Дякую за творчість! ❤️", lang: "uk" },
+  { text: "Продовжуй надихати! ✨", lang: "uk" },
+  { text: "За чудовий контент! 🌟", lang: "uk" },
+  // Czech
+  { text: "Na podporu tvorby! 🎨", lang: "cs" },
+  { text: "Díky za inspiraci! ❤️", lang: "cs" },
+  { text: "Pokračuj v tom! ✨", lang: "cs" },
+  { text: "Za skvělý obsah! ��", lang: "cs" }
+];
+
+const FallingDonut = ({ onCatch }: { onCatch: (x: number, y: number) => void }) => {
+  const controls = useAnimation();
+  const isLeftSide = Math.random() < 0.5;
+  const startX = isLeftSide ? 
+    Math.random() * 20 : 
+    80 + Math.random() * 20;
+  const duration = 6 + Math.random() * 6;
+  const [isCaught, setIsCaught] = useState(false);
+
+  useEffect(() => {
+    controls.start({
+      y: ["0vh", "100vh"],
+      x: [
+        `${startX}vw`,
+        `${startX + (Math.random() * 10 - 5)}vw`
+      ],
+      transition: {
+        duration,
+        ease: "linear",
+        times: [0, 1]
+      }
+    });
+  }, []);
+
+  const handleClick = (event: React.MouseEvent) => {
+    if (!isCaught) {
+      setIsCaught(true);
+      controls.stop();
+      onCatch(event.clientX, event.clientY);
+      controls.start({
+        opacity: 0,
+        scale: 0,
+        transition: { duration: 0.3 }
+      });
+    }
+  };
+
+  return (
+    <motion.div
+      animate={controls}
+      initial={{ opacity: 1 }}
+      style={{ 
+        position: "absolute", 
+        cursor: "pointer", 
+        fontSize: "2rem",
+        pointerEvents: isCaught ? "none" : "auto" 
+      }}
+      onClick={handleClick}
+      whileHover={{ scale: 1.2 }}
+    >
+      🍩
+    </motion.div>
+  );
+};
+
+const DonationPopup = ({ x, y, amount }: { x: number, y: number, amount: number }) => {
+  const cheer = useMemo(() => 
+    cheerPhrases[Math.floor(Math.random() * cheerPhrases.length)],
+    []
+  );
+  
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 0, x: "-50%" }}
+      animate={{ opacity: 1, y: -50 }}
+      exit={{ opacity: 0, y: -100 }}
+      transition={{ duration: 0.5 }}
+      style={{
+        position: "fixed",
+        left: x,
+        top: y,
+        zIndex: 50,
+        pointerEvents: "none",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        gap: "0.5rem",
+        textAlign: "center"
+      }}
+    >
+      <div className="text-xl font-medium whitespace-nowrap">
+        {cheer.text}
+      </div>
+      <div className="text-2xl font-bold whitespace-nowrap">
+        +${amount.toFixed(2)}
+      </div>
+    </motion.div>
+  );
+};
+
 export default function DonnutLanding() {
   const router = useRouter()
+  const [donuts, setDonuts] = useState<number[]>([]);
+  const [popups, setPopups] = useState<{ id: number; x: number; y: number; amount: number }[]>([]);
+  const [nextId, setNextId] = useState(0);
+
+  // Add new donuts periodically
+  useEffect(() => {
+    const interval = setInterval(() => {
+      // Add multiple donuts at once for a more dense effect
+      const newDonuts = Array(3).fill(0).map(() => Date.now() + Math.random());
+      setDonuts(prev => [...prev, ...newDonuts]);
+    }, 2000); // Increased from 1000ms to 2000ms for slower spawns
+
+    return () => clearInterval(interval);
+  }, []);
+
+  // Remove old donuts
+  useEffect(() => {
+    const cleanup = setInterval(() => {
+      setDonuts(prev => prev.filter(d => Date.now() - d < 14000)); // Increased from 7000ms to 14000ms for longer lifetime
+    }, 1000);
+
+    return () => clearInterval(cleanup);
+  }, []);
+
+  const handleCatch = useCallback((x: number, y: number) => {
+    const amount = (Math.random() * 30).toFixed(2);
+    const id = nextId;
+    
+    // Remove any existing popups before adding new one
+    setPopups([{ id, x, y, amount: parseFloat(amount) }]);
+    setNextId(prev => prev + 1);
+
+    // Remove popup after animation
+    setTimeout(() => {
+      setPopups([]);
+    }, 1000);
+  }, [nextId]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#F5E6CC] via-[#FFE5E5] to-[#F5E6CC]">
+      {/* Falling Donuts */}
+      <div className="fixed inset-0 pointer-events-none">
+        <div className="relative w-full h-full pointer-events-auto">
+          {donuts.map(key => (
+            <FallingDonut key={key} onCatch={handleCatch} />
+          ))}
+        </div>
+      </div>
+
+      {/* Donation Popups */}
+      <AnimatePresence>
+        {popups.map(popup => (
+          <DonationPopup
+            key={popup.id}
+            x={popup.x}
+            y={popup.y}
+            amount={popup.amount}
+          />
+        ))}
+      </AnimatePresence>
+
       <Header />
 
       {/* Hero Section */}
