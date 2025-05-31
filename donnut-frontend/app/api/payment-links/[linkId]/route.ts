@@ -3,10 +3,10 @@ import { pool } from '@/lib/db';
 
 export async function GET(
   request: Request,
-  context: { params: { linkId: string } }
+  { params }: { params: { linkId: string } }
 ) {
   try {
-    const { linkId } = context.params;
+    const { linkId } = params;
     if (!linkId) {
       return NextResponse.json(
         { error: 'Link ID is required' },
