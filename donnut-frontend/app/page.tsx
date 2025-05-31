@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
+import { WalletButton } from "@/components/WalletButton"
 import {
   Star,
   Coins,
@@ -61,13 +62,7 @@ export default function DonnutLanding() {
               </div>
             </div>
             <div className="flex items-center space-x-4">
-              <Button
-                variant="outline"
-                className="hidden sm:inline-flex border-2 rounded-full"
-                style={{ borderColor: "#A076F9", color: "#A076F9" }}
-              >
-                Creator Login
-              </Button>
+              <WalletButton />
               <Button className="rounded-full text-white font-semibold" style={{ backgroundColor: "#A076F9" }}>
                 Send a Donnut
               </Button>
