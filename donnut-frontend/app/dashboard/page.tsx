@@ -24,7 +24,7 @@ interface PaymentLinkWithDonations extends PaymentLink {
   donations: Donation[];
 }
 
-export default function DashboardPage() {
+export default function CreatorDashboardPage() {
   const { user, authenticated } = usePrivy();
   const router = useRouter();
   const [paymentLinks, setPaymentLinks] = useState<PaymentLinkWithDonations[]>([]);
@@ -124,7 +124,7 @@ export default function DashboardPage() {
           className="text-center bg-white bg-opacity-80 backdrop-blur-sm p-8 rounded-3xl shadow-xl"
         >
           <h1 className="text-2xl font-bold mb-4" style={{ color: "#5D4037" }}>Please connect your wallet</h1>
-          <p className="text-gray-600">You need to connect your wallet to view your dashboard.</p>
+          <p className="text-gray-600">You need to connect your wallet to view your creator-dashboard.</p>
         </motion.div>
       </div>
     );
@@ -141,11 +141,11 @@ export default function DashboardPage() {
           className="flex justify-between items-center mb-8"
         >
           <div>
-            <h1 className="text-3xl font-bold" style={{ color: "#5D4037" }}>Dashboard</h1>
+            <h1 className="text-3xl font-bold" style={{ color: "#5D4037" }}>CreatorDashboard</h1>
             <p className="text-sm mt-1 text-gray-600">Welcome back{user?.email ? `, ${user.email}` : ''}</p>
           </div>
           <Button
-            onClick={() => router.push('/dashboard/create-link')}
+            onClick={() => router.push('/creator-dashboard/create-link')}
             className="rounded-full text-white font-semibold hover:scale-105 transition-transform"
             style={{ backgroundColor: "#A076F9" }}
           >
@@ -242,7 +242,7 @@ export default function DashboardPage() {
             <p className="mb-4 text-lg" style={{ color: "#5D4037" }}>You haven't created any payment links yet.</p>
             <p className="mb-6 text-gray-600">Start receiving donations by creating your first payment link!</p>
             <Button
-              onClick={() => router.push('/dashboard/create-link')}
+              onClick={() => router.push('/creator-dashboard/create-link')}
               className="rounded-full text-white font-semibold hover:scale-105 transition-transform"
               style={{ backgroundColor: "#A076F9" }}
             >

@@ -58,14 +58,14 @@ export function Header() {
             ) : (
               <div className="hidden md:flex space-x-6">
                 <Link
-                  href="/dashboard"
+                  href="/creator-dashboard"
                   className="text-sm font-medium hover:opacity-75"
                   style={{ color: "#5D4037" }}
                 >
-                  Dashboard
+                  Creator Dashboard
                 </Link>
                 <Link
-                  href="/dashboard/create-link"
+                  href="/creator-dashboard/create-link"
                   className="text-sm font-medium hover:opacity-75"
                   style={{ color: "#5D4037" }}
                 >

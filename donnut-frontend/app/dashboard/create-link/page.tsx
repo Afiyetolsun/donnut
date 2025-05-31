@@ -52,7 +52,7 @@ export default function CreateLinkPage() {
       }
 
       toast.success('Payment link created successfully!');
-      router.push('/dashboard');
+      router.push('/creator-dashboard');
     } catch (error) {
       console.error('Error creating payment link:', error);
       setError('Something went wrong. Please check your connection and try again.');
@@ -84,7 +84,7 @@ export default function CreateLinkPage() {
           style={{ color: "#5D4037" }}
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
-          Back to Dashboard
+          Back to Creator Dashboard
         </Button>
 
         <div className="max-w-2xl mx-auto">

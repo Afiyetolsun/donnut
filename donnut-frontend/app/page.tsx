@@ -170,16 +170,18 @@ export default function DonnutLanding() {
   const [donuts, setDonuts] = useState<number[]>([]);
   const [popups, setPopups] = useState<{ id: number; x: number; y: number; amount: number }[]>([]);
   const [nextId, setNextId] = useState(0);
+  const [isHydrated, setIsHydrated] = useState(false);
   const howItWorksRef = useRef(null);
   const isHowItWorksInView = useInView(howItWorksRef);
 
+  // Set isHydrated to true after initial render
+  useEffect(() => {
+    setIsHydrated(true);
+  }, []);
+
   // Add new donuts periodically
   useEffect(() => {
-    if (isHowItWorksInView) {
-      // Clear existing donuts when section comes into view
-      setDonuts([]);
-      return;
-    }
+    if (!isHydrated) return;
 
     const interval = setInterval(() => {
       // Add multiple donuts at once for a more dense effect
@@ -188,18 +190,22 @@ export default function DonnutLanding() {
     }, 2000);
 
     return () => clearInterval(interval);
-  }, [isHowItWorksInView]);
+  }, [isHydrated]);
 
   // Remove old donuts
   useEffect(() => {
+    if (!isHydrated) return;
+
     const cleanup = setInterval(() => {
       setDonuts(prev => prev.filter(d => Date.now() - d < 14000));
     }, 1000);
 
     return () => clearInterval(cleanup);
-  }, []);
+  }, [isHydrated]);
 
   const handleCatch = useCallback((x: number, y: number) => {
+    if (!isHydrated) return;
+    
     const amount = (Math.random() * 30).toFixed(2);
     const id = nextId;
     
@@ -211,7 +217,7 @@ export default function DonnutLanding() {
     setTimeout(() => {
       setPopups([]);
     }, 1000);
-  }, [nextId]);
+  }, [nextId, isHydrated]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#F5E6CC] via-[#FFE5E5] to-[#F5E6CC]">
@@ -297,9 +303,9 @@ export default function DonnutLanding() {
                 variant="outline"
                 className="rounded-full px-8 py-6 text-lg font-semibold border-2"
                 style={{ borderColor: "#A076F9", color: "#A076F9" }}
-                onClick={() => router.push('/dashboard')}
+                onClick={() => router.push('/creator-dashboard')}
               >
-                Dashboard
+                Creator Dashboard
                 <ChevronRight className="ml-2 h-5 w-5" />
               </Button>
             </motion.div>
@@ -584,7 +590,7 @@ export default function DonnutLanding() {
                     size="lg"
                     className="w-full rounded-full text-white font-semibold shadow-xl"
                     style={{ backgroundColor: "#A076F9" }}
-                    onClick={() => router.push('/dashboard')}
+                    onClick={() => router.push('/creator-dashboard')}
                   >
                     Creator Dashboard
                     <ChevronRight className="ml-2 h-5 w-5" />
@@ -782,7 +788,7 @@ export default function DonnutLanding() {
               variant="outline"
               className="rounded-full px-8 py-6 text-lg font-semibold border-2"
               style={{ borderColor: "#A076F9", color: "#A076F9" }}
-              onClick={() => router.push('/dashboard')}
+              onClick={() => router.push('/creator-dashboard')}
             >
               Creator Dashboard
               <ChevronRight className="ml-2 h-5 w-5" />

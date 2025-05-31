@@ -85,10 +85,10 @@ export function WalletButton() {
       <DropdownMenuContent align="end" className="w-56">
         <DropdownMenuItem 
           className="py-3 cursor-pointer hover:bg-[#A076F9]/10 focus:bg-[#A076F9]/10"
-          onClick={() => router.push('/dashboard')}
+          onClick={() => router.push('/creator-dashboard')}
         >
           <User className="mr-2 h-4 w-4" />
-          <span>Dashboard</span>
+          <span>Creator Dashboard</span>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem 
