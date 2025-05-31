@@ -32,11 +32,6 @@ contract MockERC20 is ERC20, Ownable {
         _burn(msg.sender, amount);
     }
 
-    /**
-     * @notice Allows anyone to burn tokens from a specific account, provided they have allowance.
-     * @dev This is part of the standard ERC20 interface (burnFrom).
-     */
-    function burnFrom(address account, uint256 amount) public override {
-        super.burnFrom(account, amount);
-    }
+    // burnFrom is inherited from OpenZeppelin's ERC20.sol
+    // No need to override if we are not changing its behavior.
 }

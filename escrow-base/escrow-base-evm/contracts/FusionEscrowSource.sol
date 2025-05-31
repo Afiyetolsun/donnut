@@ -68,9 +68,9 @@ contract FusionEscrowSource is ReentrancyGuard {
      * @param _resolver The address of the resolver who will fulfill the order on the destination chain.
      * @param _token The ERC20 token contract address for the swap.
      * @param _amount The amount of tokens to be swapped.
-     * @param _safetyDepositAmount The amount of native currency (ETH) for the safety deposit.
      * @param _hashSecret The Keccak256 hash of the secret.
      * @param _timeoutDuration The duration in seconds after which the order can be cancelled.
+     * @dev The safety deposit is sent as msg.value.
      */
     function createOrder(
         bytes32 _orderId,
