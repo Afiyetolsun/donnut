@@ -152,20 +152,13 @@ async function main() {
     // Place order
     console.log('Placing order...');
     const order = await sdk.placeOrder(quote, {
-      walletAddress: makerAddress,
-      receiver: receiverAddress,
+      walletAddress: makerAddressEnv,
+      receiver: receiverAddressEnv,
       preset: PresetEnum.fast,
       source: 'sdk-tutorial',
       hashLock,
       secretHashes,
-    };
-
-    // THIS IS LINE ~160 from your error log - FOR LOGGING, use hashLockString (which is hashLock.toString())
-    console.log('Placing order with params (logging string hashLock):', {
-        ...placeOrderParams,
-        hashLock: hashLockString // Log the string for readability
     });
-    const order = await sdk.placeOrder(quote, placeOrderParams);
 
   const orderHash = order.orderHash;
   console.log('▶️ OrderHash:', orderHash);
