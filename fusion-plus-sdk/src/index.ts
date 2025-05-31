@@ -1,8 +1,8 @@
 import { HashLock, SDK, PresetEnum, ReadyToAcceptSecretFills, ReadyToExecutePublicActions, OrderStatusResponse, OrderStatus } from '@1inch/cross-chain-sdk';
 import dotenv from 'dotenv';
-import { ethers } from 'ethers';
+import { BigNumber, ethers } from 'ethers';
 
-// Custom BlockchainProviderConnector for ethers
+// 2. CLASS DEFINITIONS
 class EthersBlockchainProvider {
   private wallet: ethers.Wallet;
 
@@ -11,9 +11,8 @@ class EthersBlockchainProvider {
   }
 
   async signTypedData(walletAddress: string, typedData: any): Promise<string> {
-    // Extract primary type and remove EIP712Domain from types
     const { domain, types, message } = typedData;
-    const { EIP712Domain, ...signTypes } = types; // Remove EIP712Domain
+    const { EIP712Domain, ...signTypes } = types;
     return this.wallet._signTypedData(domain, signTypes, message);
   }
 
@@ -25,30 +24,83 @@ class EthersBlockchainProvider {
   }
 }
 
-// Load environment variables
+// 3. HELPER FUNCTION DEFINITIONS
+async function ensureAllowance(
+  wallet: ethers.Wallet,
+  tokenAddress: string,
+  spenderAddress: string, 
+  amount: string | BigNumber | bigint
+) {
+  const tokenContract = new ethers.Contract(
+    tokenAddress,
+    [
+      'function allowance(address owner, address spender) view returns (uint256)',
+      'function approve(address spender, uint256 amount) returns (bool)',
+    ],
+    wallet
+  );
+
+  const ownerAddress = await wallet.getAddress();
+  const currentAllowance = await tokenContract.allowance(ownerAddress, spenderAddress);
+  
+  console.log(`Token Address: ${tokenAddress}`);
+  console.log(`Owner Address (Maker): ${ownerAddress}`);
+  console.log(`Spender Address (Escrow Factory/Settlement): ${spenderAddress}`);
+  console.log(`Current allowance: ${currentAllowance.toString()}`);
+
+  const requiredAmount = BigNumber.from(amount);
+
+  if (currentAllowance.lt(requiredAmount)) {
+    console.log(`Required allowance: ${requiredAmount.toString()}. Current allowance is insufficient.`);
+    console.log(`Approving ${spenderAddress} to spend ${requiredAmount.toString()} tokens...`);
+    try {
+      const approveTx = await tokenContract.approve(spenderAddress, requiredAmount);
+      console.log(`Approval transaction sent: ${approveTx.hash} (waiting for confirmation...)`);
+      const receipt = await approveTx.wait();
+      console.log(`Approval transaction confirmed. Gas used: ${receipt.gasUsed.toString()}`);
+      
+      const newAllowance = await tokenContract.allowance(ownerAddress, spenderAddress);
+      console.log(`New allowance after approval: ${newAllowance.toString()}`);
+      if (newAllowance.lt(requiredAmount)) {
+          console.error("ERROR: Allowance after approval is still less than required.");
+          throw new Error("Allowance not updated correctly after approval.");
+      }
+    } catch (e) {
+      console.error("Error during token approval transaction:", e);
+      throw e;
+    }
+  } else {
+    console.log(`Sufficient allowance already set: ${currentAllowance.toString()} >= ${requiredAmount.toString()}`);
+  }
+}
+
+// 4. LOAD ENVIRONMENT VARIABLES
 dotenv.config();
 
-// Validate environment variables
+// 5. VALIDATE ENVIRONMENT VARIABLES AND THE REST OF YOUR SCRIPT LOGIC
 const makerPrivateKey = process.env.MAKER_PRIVATE_KEY || "";
-const makerAddress = process.env.MAKER_ADDRESS || "";
-const receiverAddress = process.env.RECEIVER_ADDRESS;
-const nodeUrl = process.env.NODE_URL;
-const authKey = process.env.AUTH_KEY;
+const makerAddressEnv = process.env.MAKER_ADDRESS || "";
+const receiverAddressEnv = process.env.RECEIVER_ADDRESS || "";
+const nodeUrl = process.env.NODE_URL || "";
+const authKeyEnv = process.env.AUTH_KEY || "";
+
 
 
 async function main() {
-  // Initialize ethers provider
   const provider = new ethers.providers.JsonRpcProvider(nodeUrl);
   const blockchainProvider = new EthersBlockchainProvider(makerPrivateKey, provider);
 
-  // Initialize 1inch Fusion+ SDK
+  const derivedMakerAddress = new ethers.Wallet(makerPrivateKey).address;
+  if (ethers.utils.getAddress(makerAddressEnv) !== ethers.utils.getAddress(derivedMakerAddress)) {
+    console.warn(`Warning: MAKER_ADDRESS (${makerAddressEnv}) does not match address derived from MAKER_PRIVATE_KEY (${derivedMakerAddress}).`);
+  }
+  
   const sdk = new SDK({
     url: 'https://api.1inch.dev/fusion-plus',
-    authKey,
+    authKey: authKeyEnv,
     blockchainProvider,
   });
 
-  // Define swap parameters for 0.1 USDC on Arbitrum to USDT on Optimism
   const params = {
     srcChainId: 42161, // Arbitrum chain ID
     dstChainId: 10, // Optimism chain ID
@@ -56,16 +108,32 @@ async function main() {
     dstTokenAddress: '0x94b008aA00579c1307B0EF2c499aD98a8ce58e58', // USDT on Optimism
     amount: '950000', // 0.95 USDC (6 decimals)
     enableEstimate: true,
-    walletAddress: makerAddress,
+    walletAddress: makerAddressEnv, 
   };
 
   try {
-    // Get quote
-    console.log('Fetching quote...');
+    console.log('Fetching quote with params:', params);
     const quote = await sdk.getQuote(params);
+    console.log('Quote received. Recommended preset:', quote.recommendedPreset);
 
-    // Generate secrets and hash locks
+    // THIS IS LINE ~118 from your error log - IT MUST BE .toString()
+    const spenderAddressString = quote.srcEscrowFactory.toString(); 
+    console.log(`Spender address (srcEscrowFactory) requiring allowance: ${spenderAddressString}`);
+    
+    const tokenAmountToApprove = params.amount; 
+    const approvalWallet = new ethers.Wallet(makerPrivateKey, provider);
+
+    console.log(`Ensuring allowance for maker ${await approvalWallet.getAddress()} to let spender ${spenderAddressString} use ${tokenAmountToApprove} of token ${params.srcTokenAddress}...`);
+    await ensureAllowance(
+      approvalWallet,
+      params.srcTokenAddress,
+      spenderAddressString, 
+      tokenAmountToApprove
+    );
+
     const secretsCount = quote.getPreset().secretsCount;
+    console.log('Secrets count required:', secretsCount);
+
     const secrets = Array.from({ length: secretsCount }).map(() => ethers.utils.hexlify(ethers.utils.randomBytes(32)));
     const secretHashes = secrets.map((s) => HashLock.hashSecret(s));
 
@@ -90,11 +158,14 @@ async function main() {
       source: 'sdk-tutorial',
       hashLock,
       secretHashes,
-      // fee: {
-      //   takingFeeBps: 1, // 1%
-      //   takingFeeReceiver: makerAddress,
-      // },
+    };
+
+    // THIS IS LINE ~160 from your error log - FOR LOGGING, use hashLockString (which is hashLock.toString())
+    console.log('Placing order with params (logging string hashLock):', {
+        ...placeOrderParams,
+        hashLock: hashLockString // Log the string for readability
     });
+    const order = await sdk.placeOrder(quote, placeOrderParams);
 
   const orderHash = order.orderHash;
   console.log('▶️ OrderHash:', orderHash);
