@@ -11,6 +11,9 @@ import { generateSlug } from '@/lib/utils';
 import { toast } from 'sonner';
 import { AlertCircle } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Header } from '@/components/header';
+import { Footer } from '@/components/footer';
+import { Card, CardContent } from '@/components/ui/card';
 
 export default function CreateLinkPage() {
   const { user, authenticated } = usePrivy();
@@ -60,9 +63,9 @@ export default function CreateLinkPage() {
 
   if (!authenticated) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: "#F5E6CC" }}>
         <div className="text-center">
-          <h1 className="text-2xl font-bold mb-4">Please connect your wallet</h1>
+          <h1 className="text-2xl font-bold mb-4" style={{ color: "#5D4037" }}>Please connect your wallet</h1>
           <p className="text-gray-600">You need to connect your wallet to create payment links.</p>
         </div>
       </div>
@@ -70,61 +73,76 @@ export default function CreateLinkPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <Button
-        variant="ghost"
-        className="mb-8"
-        onClick={() => router.back()}
-      >
-        <ArrowLeft className="mr-2 h-4 w-4" />
-        Back to Dashboard
-      </Button>
+    <div className="min-h-screen flex flex-col" style={{ backgroundColor: "#F5E6CC" }}>
+      <Header />
+      
+      <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <Button
+          variant="ghost"
+          className="mb-8"
+          onClick={() => router.back()}
+          style={{ color: "#5D4037" }}
+        >
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Back to Dashboard
+        </Button>
 
-      <div className="max-w-2xl mx-auto">
-        <h1 className="text-3xl font-bold mb-8">Create Payment Link</h1>
-        
-        <div className="bg-white rounded-lg border border-gray-200 p-6">
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="label">Label</Label>
-              <Input
-                id="label"
-                placeholder="e.g., YouTube Channel, Twitter Profile, etc."
-                value={label}
-                onChange={(e) => {
-                  setLabel(e.target.value);
-                  setError(null); // Clear error when user types
-                }}
-                maxLength={50}
-                className={error ? 'border-red-500' : ''}
-              />
-              {error && (
-                <Alert variant="destructive" className="mt-2">
-                  <AlertCircle className="h-4 w-4" />
-                  <AlertDescription>{error}</AlertDescription>
-                </Alert>
-              )}
-              <p className="text-sm text-gray-500">
-                Give your payment link a descriptive name. This will be used to create a unique URL for your link.
-                You cannot create multiple links with the same label.
-              </p>
-            </div>
+        <div className="max-w-2xl mx-auto">
+          <h1 className="text-3xl font-bold mb-8" style={{ color: "#5D4037" }}>Create Payment Link</h1>
+          
+          <Card className="border-0 shadow-lg rounded-3xl bg-white bg-opacity-80 backdrop-blur-sm">
+            <CardContent className="p-6">
+              <div className="space-y-6">
+                <div className="space-y-2">
+                  <Label htmlFor="label" className="text-[#5D4037]">Label</Label>
+                  <Input
+                    id="label"
+                    placeholder="e.g., YouTube Channel, Twitter Profile, etc."
+                    value={label}
+                    onChange={(e) => {
+                      setLabel(e.target.value);
+                      setError(null);
+                    }}
+                    maxLength={50}
+                    className={`rounded-full border-gray-200 ${error ? 'border-red-500' : ''}`}
+                  />
+                  {error && (
+                    <Alert variant="destructive" className="mt-2">
+                      <AlertCircle className="h-4 w-4" />
+                      <AlertDescription>{error}</AlertDescription>
+                    </Alert>
+                  )}
+                  <p className="text-sm text-gray-500">
+                    Give your payment link a descriptive name. This will be used to create a unique URL for your link.
+                    You cannot create multiple links with the same label.
+                  </p>
+                </div>
 
-            <p className="text-gray-600">
-              Create a new payment link that you can share with your audience. When someone uses this link,
-              they'll be able to send you donations directly to your wallet.
-            </p>
+                <div className="bg-gray-50 rounded-2xl p-4">
+                  <h3 className="font-semibold mb-2" style={{ color: "#5D4037" }}>How it works</h3>
+                  <ul className="space-y-2 text-sm text-gray-600">
+                    <li>• Your payment link will be created with a unique URL based on the label</li>
+                    <li>• Share this link with your audience to receive donations</li>
+                    <li>• All donations will be sent directly to your connected wallet</li>
+                    <li>• You can create multiple links for different purposes</li>
+                  </ul>
+                </div>
 
-            <Button
-              onClick={handleCreateLink}
-              disabled={isCreating || !label.trim()}
-              className="w-full bg-[#A076F9] hover:bg-[#A076F9]/90"
-            >
-              {isCreating ? 'Creating...' : 'Create Payment Link'}
-            </Button>
-          </div>
+                <Button
+                  onClick={handleCreateLink}
+                  disabled={isCreating || !label.trim()}
+                  className="w-full rounded-full text-white font-semibold"
+                  style={{ backgroundColor: "#A076F9" }}
+                >
+                  {isCreating ? 'Creating...' : 'Create Payment Link'}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         </div>
-      </div>
+      </main>
+      
+      <Footer />
     </div>
   );
 } 

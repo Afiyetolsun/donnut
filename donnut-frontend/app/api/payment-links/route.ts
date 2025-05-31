@@ -54,12 +54,26 @@ export async function GET(request: Request) {
       );
     }
 
-    const paymentLinks = await getPaymentLinksByWalletAddress(walletAddress);
-    return NextResponse.json(paymentLinks);
+    try {
+      const paymentLinks = await getPaymentLinksByWalletAddress(walletAddress);
+      return NextResponse.json(paymentLinks);
+    } catch (error) {
+      console.error('Error fetching payment links:', error);
+      if (error instanceof Error) {
+        return NextResponse.json(
+          { error: error.message },
+          { status: 500 }
+        );
+      }
+      return NextResponse.json(
+        { error: 'Failed to fetch payment links' },
+        { status: 500 }
+      );
+    }
   } catch (error) {
-    console.error('Error fetching payment links:', error);
+    console.error('Error in payment links GET route:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch payment links' },
+      { error: 'Internal server error' },
       { status: 500 }
     );
   }
