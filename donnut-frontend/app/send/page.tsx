@@ -7,13 +7,14 @@ import { Input } from "@/components/ui/input";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, CheckCircle2 } from "lucide-react";
 
 export default function SendDonutPage() {
   const router = useRouter();
   const [donutLink, setDonutLink] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,14 +25,19 @@ export default function SendDonutPage() {
       // Extract the donut ID from the link
       const donutId = donutLink.split('/').pop();
       
-      // Check if the donut exists in the database
-      const response = await fetch(`/api/donnut/${donutId}`);
+      // Check if the payment link exists in the database
+      const response = await fetch(`/api/payment-links/${donutId}`);
       
       if (response.ok) {
-        // If the donut exists, redirect to the donut page
-        router.push(`/donnut/${donutId}`);
+        // Show success state
+        setIsSuccess(true);
+        // Wait for 1.5 seconds to show the success animation
+        setTimeout(() => {
+          router.push(`/donnut/${donutId}`);
+        }, 1500);
       } else {
-        setError('This donut link does not exist. Please check the link and try again.');
+        const data = await response.json();
+        setError(data.error || 'This donut link does not exist. Please check the link and try again.');
       }
     } catch (err) {
       setError('An error occurred while checking the donut link. Please try again.');
@@ -64,6 +70,7 @@ export default function SendDonutPage() {
                 onChange={(e) => setDonutLink(e.target.value)}
                 className="w-full bg-white bg-opacity-60 backdrop-blur-sm border-input"
                 required
+                disabled={isLoading || isSuccess}
               />
               
               {error && (
@@ -72,15 +79,22 @@ export default function SendDonutPage() {
                   <AlertDescription className="text-destructive">{error}</AlertDescription>
                 </Alert>
               )}
+
+              {isSuccess && (
+                <div className="flex items-center justify-center space-x-2 text-green-600 animate-fade-in">
+                  <CheckCircle2 className="h-5 w-5 animate-bounce" />
+                  <span className="font-medium">Link found! Redirecting...</span>
+                </div>
+              )}
             </div>
 
             <Button
               type="submit"
               className="w-full rounded-full text-white font-semibold shadow-xl"
               style={{ backgroundColor: "#A076F9" }}
-              disabled={isLoading}
+              disabled={isLoading || isSuccess}
             >
-              {isLoading ? 'Checking...' : 'Continue'}
+              {isLoading ? 'Checking...' : isSuccess ? 'Found!' : 'Continue'}
             </Button>
           </form>
         </div>
