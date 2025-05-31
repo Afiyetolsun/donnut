@@ -26,6 +26,8 @@ import { Footer } from "@/components/footer"
 import { motion, AnimatePresence, useAnimation, useInView } from "framer-motion"
 import { useRouter } from "next/navigation"
 import { useState, useCallback, useEffect, useMemo, useRef } from "react"
+import { usePrivy } from '@privy-io/react-auth';
+import { useWalletChain } from '@/hooks/useWalletChain';
 
 const fadeInUp = {
   initial: { opacity: 0, y: 20 },
@@ -194,6 +196,8 @@ export default function DonnutLanding() {
   const [isHydrated, setIsHydrated] = useState(false);
   const howItWorksRef = useRef(null);
   const isHowItWorksInView = useInView(howItWorksRef);
+  const { user, authenticated } = usePrivy();
+  const { isLoading: isChainLoading } = useWalletChain();
 
   // Set isHydrated to true after initial render
   useEffect(() => {

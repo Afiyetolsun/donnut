@@ -13,6 +13,8 @@ import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
+import { NetworkSelector } from '@/components/network-selector';
+import { useWalletChain } from '@/hooks/useWalletChain';
 
 interface Donation {
   id: string;
@@ -32,6 +34,7 @@ export default function CreatorDashboardPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [expandedLinks, setExpandedLinks] = useState<Set<string>>(new Set());
   const [copiedLinkId, setCopiedLinkId] = useState<string | null>(null);
+  const { currentChain, isLoading: isChainLoading, updateUserChain } = useWalletChain();
 
   const getDonutColor = (seed: string) => {
     // Generate a consistent color based on the seed
@@ -70,7 +73,7 @@ export default function CreatorDashboardPage() {
       }
     };
 
-    if (authenticated) {
+    if (authenticated && user?.wallet?.address) {
       fetchPaymentLinks();
     }
   }, [authenticated, user?.wallet?.address]);
@@ -141,18 +144,25 @@ export default function CreatorDashboardPage() {
           className="flex justify-between items-center mb-8"
         >
           <div>
-            <h1 className="text-3xl font-bold" style={{ color: "#5D4037" }}>CreatorDashboard</h1>
-            <p className="text-sm mt-1 text-gray-600">Welcome back{user?.email ? `, ${user.email}` : ''}</p>
+            <h1 className="text-3xl font-bold" style={{ color: "#5D4037" }}>Creator Dashboard</h1>
           </div>
-          <Button
-            onClick={() => router.push('/creator-dashboard/create-link')}
-            className="rounded-full text-white font-semibold hover:scale-105 transition-transform"
-            style={{ backgroundColor: "#A076F9" }}
-          >
-            <Plus className="mr-2 h-4 w-4" />
-            Create New Link
-            <ChevronRight className="ml-2 h-4 w-4" />
-          </Button>
+          <div className="flex items-center gap-4">
+            {!isChainLoading && (
+              <NetworkSelector
+                currentChain={currentChain}
+                updateUserChain={updateUserChain}
+              />
+            )}
+            <Button
+              onClick={() => router.push('/creator-dashboard/create-link')}
+              className="rounded-full text-white font-semibold hover:scale-105 transition-transform"
+              style={{ backgroundColor: "#A076F9" }}
+            >
+              <Plus className="mr-2 h-4 w-4" />
+              Create New Link
+              <ChevronRight className="ml-2 h-4 w-4" />
+            </Button>
+          </div>
         </motion.div>
 
         {/* Statistics Cards */}
