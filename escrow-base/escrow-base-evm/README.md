@@ -401,7 +401,7 @@ Run this script with: `npx hardhat run scripts/createOrder.js --network sourceCh
 If you deployed to a public testnet or mainnet and configured `etherscan` in `hardhat.config.js`:
 
 ```bash
-npx hardhat verify --network sourceChain YOUR_FUSIONESCROWSOURCE_ADDRESS
+ YOUR_FUSIONESCROWSOURCE_ADDRESS
 npx hardhat verify --network destinationChain YOUR_FUSIONESCROWDESTINATION_ADDRESS
 ```
 

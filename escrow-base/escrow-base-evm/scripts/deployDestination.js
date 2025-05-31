@@ -1,4 +1,3 @@
-// scripts/deployDestination.js
 const hre = require("hardhat");
 
 async function main() {
@@ -6,15 +5,22 @@ async function main() {
   console.log(
     `Deploying FusionEscrowDestination to network "${hre.network.name}" with account: ${deployer.address}`
   );
-  console.log(`Account balance: ${(await deployer.getBalance()).toString()} ETH`);
+
+  const balanceBN = await hre.ethers.provider.getBalance(deployer.address);
+  console.log(`Account balance: ${hre.ethers.formatEther(balanceBN)} ETH`);
 
   const FusionEscrowDestination = await hre.ethers.getContractFactory("FusionEscrowDestination");
-  const fusionEscrowDestination = await FusionEscrowDestination.deploy();
+  const deployment = await FusionEscrowDestination.deploy();
+  
+  // Wait for the deployment transaction to be mined
+  const deployTx = await deployment.deploymentTransaction();
+  const receipt = await deployTx.wait();
 
-  await fusionEscrowDestination.deployed();
+  // Get the contract address from the receipt
+  const contractAddress = receipt.contractAddress;
 
-  console.log("FusionEscrowDestination deployed to:", fusionEscrowDestination.address);
-  console.log(`Transaction hash: ${fusionEscrowDestination.deployTransaction.hash}`);
+  console.log("FusionEscrowDestination deployed to:", contractAddress);
+  console.log(`Transaction hash: ${deployTx.hash}`);
   console.log("Remember to save this address for your .env file or application configuration.");
 }
 
