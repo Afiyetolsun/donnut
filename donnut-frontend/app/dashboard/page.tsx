@@ -3,7 +3,7 @@
 import { usePrivy } from '@privy-io/react-auth';
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Plus, ChevronRight, ChevronDown, ChevronUp, Search, Copy, Check } from 'lucide-react';
+import { Plus, ChevronRight, ChevronDown, ChevronUp, Search, Copy, Check, TrendingUp, Gift, Star } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { PaymentLink } from '@/lib/db';
 import { Header } from '@/components/header';
@@ -12,6 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { toast } from 'sonner';
+import { motion } from 'framer-motion';
 
 interface Donation {
   id: string;
@@ -116,185 +117,274 @@ export default function DashboardPage() {
 
   if (!authenticated) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: "#F5E6CC" }}>
-        <div className="text-center">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#F5E6CC] via-[#FFE5E5] to-[#F5E6CC]">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center bg-white bg-opacity-80 backdrop-blur-sm p-8 rounded-3xl shadow-xl"
+        >
           <h1 className="text-2xl font-bold mb-4" style={{ color: "#5D4037" }}>Please connect your wallet</h1>
           <p className="text-gray-600">You need to connect your wallet to view your dashboard.</p>
-        </div>
+        </motion.div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ backgroundColor: "#F5E6CC" }}>
+    <div className="min-h-screen flex flex-col bg-gradient-to-br from-[#F5E6CC] via-[#FFE5E5] to-[#F5E6CC]">
       <Header />
       
       <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold" style={{ color: "#5D4037" }}>Dashboard</h1>
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex justify-between items-center mb-8"
+        >
+          <div>
+            <h1 className="text-3xl font-bold" style={{ color: "#5D4037" }}>Dashboard</h1>
+            <p className="text-sm mt-1 text-gray-600">Welcome back{user?.email ? `, ${user.email}` : ''}</p>
+          </div>
           <Button
             onClick={() => router.push('/dashboard/create-link')}
-            className="rounded-full text-white font-semibold"
+            className="rounded-full text-white font-semibold hover:scale-105 transition-transform"
             style={{ backgroundColor: "#A076F9" }}
           >
             <Plus className="mr-2 h-4 w-4" />
             Create New Link
             <ChevronRight className="ml-2 h-4 w-4" />
           </Button>
-        </div>
+        </motion.div>
 
         {/* Statistics Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-          <Card className="border-0 shadow-lg rounded-3xl bg-white bg-opacity-80 backdrop-blur-sm">
-            <CardHeader>
-              <CardTitle style={{ color: "#5D4037" }}>Total Links</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-2xl font-bold" style={{ color: "#A076F9" }}>{paymentLinks.length}</p>
-            </CardContent>
-          </Card>
-          <Card className="border-0 shadow-lg rounded-3xl bg-white bg-opacity-80 backdrop-blur-sm">
-            <CardHeader>
-              <CardTitle style={{ color: "#5D4037" }}>Total Transactions</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-2xl font-bold" style={{ color: "#A076F9" }}>{totalDonations}</p>
-            </CardContent>
-          </Card>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.1 }}
+          >
+            <Card className="border-0 shadow-lg rounded-3xl bg-white bg-opacity-80 backdrop-blur-sm hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2" style={{ color: "#5D4037" }}>
+                  <Gift className="h-5 w-5" style={{ color: "#A076F9" }} />
+                  Total Links
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-baseline">
+                  <p className="text-4xl font-bold" style={{ color: "#A076F9" }}>{paymentLinks.length}</p>
+                  <p className="ml-2 text-sm text-gray-500">active links</p>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.2 }}
+          >
+            <Card className="border-0 shadow-lg rounded-3xl bg-white bg-opacity-80 backdrop-blur-sm hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2" style={{ color: "#5D4037" }}>
+                  <TrendingUp className="h-5 w-5" style={{ color: "#40C5E0" }} />
+                  Total Transactions
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-baseline">
+                  <p className="text-4xl font-bold" style={{ color: "#40C5E0" }}>{totalDonations}</p>
+                  <p className="ml-2 text-sm text-gray-500">donations received</p>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.3 }}
+          >
+            <Card className="border-0 shadow-lg rounded-3xl bg-white bg-opacity-80 backdrop-blur-sm hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2" style={{ color: "#5D4037" }}>
+                  <Star className="h-5 w-5" style={{ color: "#FFCAD4" }} />
+                  Average Per Link
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-baseline">
+                  <p className="text-4xl font-bold" style={{ color: "#FFCAD4" }}>
+                    {paymentLinks.length ? (totalDonations / paymentLinks.length).toFixed(1) : '0'}
+                  </p>
+                  <p className="ml-2 text-sm text-gray-500">donations/link</p>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
         </div>
 
         {isLoading ? (
-          <div className="text-center py-8">
-            <p style={{ color: "#5D4037" }}>Loading your payment links...</p>
-          </div>
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="text-center py-8"
+          >
+            <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-t-[#A076F9] border-r-transparent border-b-[#40C5E0] border-l-transparent"></div>
+            <p className="mt-4" style={{ color: "#5D4037" }}>Loading your payment links...</p>
+          </motion.div>
         ) : paymentLinks.length === 0 ? (
-          <div className="text-center py-8">
-            <p className="mb-4" style={{ color: "#5D4037" }}>You haven't created any payment links yet.</p>
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-center py-8 bg-white bg-opacity-60 backdrop-blur-sm rounded-3xl shadow-lg p-8"
+          >
+            <img src="/logo.svg" alt="Donnut logo" className="w-16 h-16 mx-auto mb-6" />
+            <p className="mb-4 text-lg" style={{ color: "#5D4037" }}>You haven't created any payment links yet.</p>
+            <p className="mb-6 text-gray-600">Start receiving donations by creating your first payment link!</p>
             <Button
               onClick={() => router.push('/dashboard/create-link')}
-              className="rounded-full text-white font-semibold"
+              className="rounded-full text-white font-semibold hover:scale-105 transition-transform"
               style={{ backgroundColor: "#A076F9" }}
             >
               Create Your First Link
               <ChevronRight className="ml-2 h-4 w-4" />
             </Button>
-          </div>
+          </motion.div>
         ) : (
-          <div className="space-y-4">
-            <div className="relative">
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="space-y-4"
+          >
+            <div className="relative mb-6">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
               <Input
                 placeholder="Search links by name..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 rounded-full border-gray-200"
+                className="pl-10 rounded-full border-2 border-gray-200 focus:border-[#A076F9] transition-colors bg-white bg-opacity-80 backdrop-blur-sm"
               />
             </div>
             
-            {filteredLinks.map((link) => (
-              <Card key={link.id} className="border-0 shadow-lg rounded-3xl bg-white bg-opacity-80 backdrop-blur-sm hover:shadow-xl transition-shadow duration-200">
-                <div className="p-6">
-                  <div className="flex items-start gap-4">
-                    <div className="flex-shrink-0">
-                      <div className="w-12 h-12 flex items-center justify-center text-3xl">
-                        <span 
-                          className="transform transition-transform hover:scale-110"
-                          style={{ filter: getDonutColor(link.id) }}
+            {filteredLinks.map((link, index) => (
+              <motion.div
+                key={link.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.1 }}
+              >
+                <Card className="border-0 shadow-lg rounded-3xl bg-white bg-opacity-80 backdrop-blur-sm hover:shadow-xl transition-all duration-300">
+                  <div className="p-6">
+                    <div className="flex items-start gap-4">
+                      <div className="flex-shrink-0">
+                        <motion.div 
+                          whileHover={{ scale: 1.2, rotate: 360 }}
+                          transition={{ duration: 0.5 }}
+                          className="w-12 h-12 flex items-center justify-center text-3xl"
                         >
-                          🍩
-                        </span>
+                          <span style={{ filter: getDonutColor(link.id) }}>🍩</span>
+                        </motion.div>
                       </div>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between mb-2">
-                        <h3 className="text-lg font-semibold truncate" style={{ color: "#5D4037" }}>{link.label}</h3>
-                        <span className="text-sm text-gray-500 ml-2 whitespace-nowrap">Created {formatDate(link.created_at)}</span>
-                      </div>
-                      <div className="flex items-center gap-2 text-sm text-gray-500 mb-4">
-                        <p className="truncate">{link.link}</p>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            copyToClipboard(link.link, link.id);
-                          }}
-                          variant="outline"
-                          size="sm"
-                          className="rounded-full text-sm"
-                          style={{ borderColor: "#A076F9", color: "#A076F9" }}
-                        >
-                          {copiedLinkId === link.id ? (
-                            <>
-                              <Check className="h-4 w-4 mr-2" />
-                              Copied!
-                            </>
-                          ) : (
-                            <>
-                              <Copy className="h-4 w-4 mr-2" />
-                              Copy Link
-                            </>
-                          )}
-                        </Button>
-                        <Button
-                          onClick={() => toggleLinkExpansion(link.id)}
-                          variant="ghost"
-                          size="sm"
-                          className="rounded-full text-sm text-gray-500 hover:text-gray-700"
-                        >
-                          {expandedLinks.has(link.id) ? (
-                            <>
-                              <ChevronUp className="h-4 w-4 mr-2" />
-                              Show Less
-                            </>
-                          ) : (
-                            <>
-                              <ChevronDown className="h-4 w-4 mr-2" />
-                              Show More
-                            </>
-                          )}
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  {expandedLinks.has(link.id) && (
-                    <div className="mt-6 pt-6 border-t border-gray-100">
-                      {link.donations.length > 0 ? (
-                        <div>
-                          <p className="text-sm text-gray-500 mb-4">Recent Transactions:</p>
-                          <div className="max-h-48 overflow-y-auto rounded-xl border border-gray-100">
-                            <Table>
-                              <TableHeader>
-                                <TableRow>
-                                  <TableHead>Transaction Hash</TableHead>
-                                  <TableHead>Date</TableHead>
-                                </TableRow>
-                              </TableHeader>
-                              <TableBody>
-                                {link.donations.map((donation) => (
-                                  <TableRow key={donation.id}>
-                                    <TableCell className="font-mono text-sm">
-                                      {donation.transaction_hash.slice(0, 8)}...{donation.transaction_hash.slice(-6)}
-                                    </TableCell>
-                                    <TableCell>
-                                      {formatDate(donation.created_at)}
-                                    </TableCell>
-                                  </TableRow>
-                                ))}
-                              </TableBody>
-                            </Table>
-                          </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between mb-2">
+                          <h3 className="text-lg font-semibold truncate" style={{ color: "#5D4037" }}>{link.label}</h3>
+                          <span className="text-sm text-gray-500 ml-2 whitespace-nowrap">Created {formatDate(link.created_at)}</span>
                         </div>
-                      ) : (
-                        <p className="text-sm text-gray-500">No transactions yet</p>
-                      )}
+                        <div className="flex items-center gap-2 text-sm text-gray-500 mb-4">
+                          <p className="truncate">{link.link}</p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              copyToClipboard(link.link, link.id);
+                            }}
+                            variant="outline"
+                            size="sm"
+                            className="rounded-full text-sm hover:scale-105 transition-transform"
+                            style={{ borderColor: "#A076F9", color: "#A076F9" }}
+                          >
+                            {copiedLinkId === link.id ? (
+                              <motion.div
+                                initial={{ scale: 0.8 }}
+                                animate={{ scale: 1 }}
+                                className="flex items-center"
+                              >
+                                <Check className="h-4 w-4 mr-2" />
+                                Copied!
+                              </motion.div>
+                            ) : (
+                              <>
+                                <Copy className="h-4 w-4 mr-2" />
+                                Copy Link
+                              </>
+                            )}
+                          </Button>
+                          <Button
+                            onClick={() => toggleLinkExpansion(link.id)}
+                            variant="ghost"
+                            size="sm"
+                            className="rounded-full text-sm text-gray-500 hover:text-gray-700 hover:scale-105 transition-transform"
+                          >
+                            {expandedLinks.has(link.id) ? (
+                              <>
+                                <ChevronUp className="h-4 w-4 mr-2" />
+                                Show Less
+                              </>
+                            ) : (
+                              <>
+                                <ChevronDown className="h-4 w-4 mr-2" />
+                                Show Transactions
+                              </>
+                            )}
+                          </Button>
+                        </div>
+                      </div>
                     </div>
-                  )}
-                </div>
-              </Card>
+
+                    {expandedLinks.has(link.id) && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: "auto" }}
+                        exit={{ opacity: 0, height: 0 }}
+                        className="mt-6 pt-6 border-t border-gray-100"
+                      >
+                        {link.donations.length > 0 ? (
+                          <div>
+                            <p className="text-sm text-gray-500 mb-4">Recent Transactions:</p>
+                            <div className="max-h-48 overflow-y-auto rounded-xl border border-gray-100">
+                              <Table>
+                                <TableHeader>
+                                  <TableRow>
+                                    <TableHead>Transaction Hash</TableHead>
+                                    <TableHead>Date</TableHead>
+                                  </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                  {link.donations.map((donation) => (
+                                    <TableRow key={donation.id}>
+                                      <TableCell className="font-mono text-sm">
+                                        {donation.transaction_hash.slice(0, 8)}...{donation.transaction_hash.slice(-6)}
+                                      </TableCell>
+                                      <TableCell>
+                                        {formatDate(donation.created_at)}
+                                      </TableCell>
+                                    </TableRow>
+                                  ))}
+                                </TableBody>
+                              </Table>
+                            </div>
+                          </div>
+                        ) : (
+                          <p className="text-sm text-gray-500">No transactions yet</p>
+                        )}
+                      </motion.div>
+                    )}
+                  </div>
+                </Card>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         )}
       </main>
       
