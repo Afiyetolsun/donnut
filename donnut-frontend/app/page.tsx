@@ -167,7 +167,7 @@ const DonationPopup = ({ x, y, amount }: { x: number, y: number, amount: number 
 
 export default function DonnutLanding() {
   const router = useRouter()
-  const [donuts, setDonuts] = useState<number[]>([]);
+  const [donuts, setDonuts] = useState<{ id: string; timestamp: number }[]>([]);
   const [popups, setPopups] = useState<{ id: number; x: number; y: number; amount: number }[]>([]);
   const [nextId, setNextId] = useState(0);
   const [isHydrated, setIsHydrated] = useState(false);
@@ -185,7 +185,10 @@ export default function DonnutLanding() {
 
     const interval = setInterval(() => {
       // Add multiple donuts at once for a more dense effect
-      const newDonuts = Array(3).fill(0).map(() => Date.now() + Math.random());
+      const newDonuts = Array(3).fill(0).map((_, index) => ({
+        id: `${Date.now()}-${Math.random()}-${index}`,
+        timestamp: Date.now()
+      }));
       setDonuts(prev => [...prev, ...newDonuts]);
     }, 2000);
 
@@ -197,7 +200,7 @@ export default function DonnutLanding() {
     if (!isHydrated) return;
 
     const cleanup = setInterval(() => {
-      setDonuts(prev => prev.filter(d => Date.now() - d < 14000));
+      setDonuts(prev => prev.filter(d => Date.now() - d.timestamp < 14000));
     }, 1000);
 
     return () => clearInterval(cleanup);
@@ -240,8 +243,8 @@ export default function DonnutLanding() {
         {/* Falling Donuts */}
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
           <div className="relative w-full h-full">
-            {donuts.map(key => (
-              <FallingDonut key={key} onCatch={handleCatch} />
+            {donuts.map(donut => (
+              <FallingDonut key={donut.id} onCatch={handleCatch} />
             ))}
           </div>
         </div>
@@ -289,6 +292,7 @@ export default function DonnutLanding() {
                 size="lg"
                 className="rounded-full px-8 py-6 text-lg font-semibold text-white shadow-xl transition-all duration-200"
                 style={{ backgroundColor: "#A076F9" }}
+                onClick={() => router.push('/send')}
               >
                 Send a Donnut Now
                 <ChevronRight className="ml-2 h-5 w-5" />
@@ -514,8 +518,9 @@ export default function DonnutLanding() {
                     size="lg"
                     className="w-full rounded-full text-white font-semibold shadow-xl"
                     style={{ backgroundColor: "#A076F9" }}
+                    onClick={() => router.push('/send')}
                   >
-                    Send a Donnut
+                    Send a Donnut Now
                     <ChevronRight className="ml-2 h-5 w-5" />
                   </Button>
                 </motion.div>
@@ -775,24 +780,35 @@ export default function DonnutLanding() {
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <Button
-              size="lg"
-              className="rounded-full px-8 py-6 text-lg font-semibold text-white shadow-xl transition-all duration-200 transform hover:scale-105 hover:shadow-2xl"
-              style={{ backgroundColor: "#A076F9" }}
+            <motion.div
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
             >
-              Send a Donnut
-              <ChevronRight className="ml-2 h-5 w-5" />
-            </Button>
-            <Button
-              size="lg"
-              variant="outline"
-              className="rounded-full px-8 py-6 text-lg font-semibold border-2"
-              style={{ borderColor: "#A076F9", color: "#A076F9" }}
-              onClick={() => router.push('/creator-dashboard')}
+              <Button
+                size="lg"
+                className="rounded-full px-8 py-6 text-lg font-semibold text-white shadow-xl transition-all duration-200 transform hover:scale-105 hover:shadow-2xl"
+                style={{ backgroundColor: "#A076F9" }}
+                onClick={() => router.push('/send')}
+              >
+                Send a Donnut Now
+                <ChevronRight className="ml-2 h-5 w-5" />
+              </Button>
+            </motion.div>
+            <motion.div
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
             >
-              Creator Dashboard
-              <ChevronRight className="ml-2 h-5 w-5" />
-            </Button>
+              <Button
+                size="lg"
+                variant="outline"
+                className="rounded-full px-8 py-6 text-lg font-semibold border-2"
+                style={{ borderColor: "#A076F9", color: "#A076F9" }}
+                onClick={() => router.push('/creator-dashboard')}
+              >
+                Creator Dashboard
+                <ChevronRight className="ml-2 h-5 w-5" />
+              </Button>
+            </motion.div>
           </div>
         </div>
       </section>

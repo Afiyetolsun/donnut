@@ -12,6 +12,8 @@ export function Header() {
   const router = useRouter();
   const pathname = usePathname()
   const isLandingPage = pathname === '/'
+  const isSendPage = pathname === '/send'
+  const isCreatorDashboard = pathname.startsWith('/creator-dashboard')
 
   return (
     <nav className="border-b border-opacity-20 border-gray-400 bg-white bg-opacity-50 backdrop-blur-sm">
@@ -33,20 +35,6 @@ export function Header() {
                 >
                   How it Works
                 </Link>
-                <Link 
-                  href="#for-fans" 
-                  className="text-sm font-medium hover:opacity-75" 
-                  style={{ color: "#5D4037" }}
-                >
-                  For Fans
-                </Link>
-                <Link
-                  href="#for-creators"
-                  className="text-sm font-medium hover:opacity-75"
-                  style={{ color: "#5D4037" }}
-                >
-                  For Creators
-                </Link>
                 <Link
                   href="#transparency"
                   className="text-sm font-medium hover:opacity-75"
@@ -55,7 +43,7 @@ export function Header() {
                   Transparency
                 </Link>
               </div>
-            ) : (
+            ) : !isSendPage && !isCreatorDashboard && (
               <div className="hidden md:flex space-x-6">
                 <Link
                   href="/creator-dashboard"
@@ -77,7 +65,11 @@ export function Header() {
           <div className="flex items-center space-x-4">
             <WalletButton />
             {isLandingPage && (
-              <Button className="rounded-full text-white font-semibold" style={{ backgroundColor: "#A076F9" }}>
+              <Button 
+                className="rounded-full text-white font-semibold" 
+                style={{ backgroundColor: "#A076F9" }}
+                onClick={() => router.push('/send')}
+              >
                 Send a Donnut
               </Button>
             )}
