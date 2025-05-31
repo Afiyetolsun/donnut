@@ -23,9 +23,9 @@ import {
 import Link from "next/link"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
-import { motion, AnimatePresence, useAnimation } from "framer-motion"
+import { motion, AnimatePresence, useAnimation, useInView } from "framer-motion"
 import { useRouter } from "next/navigation"
-import { useState, useCallback, useEffect, useMemo } from "react"
+import { useState, useCallback, useEffect, useMemo, useRef } from "react"
 
 const fadeInUp = {
   initial: { opacity: 0, y: 20 },
@@ -72,7 +72,7 @@ const cheerPhrases = [
   { text: "Na podporu tvorby! 🎨", lang: "cs" },
   { text: "Díky za inspiraci! ❤️", lang: "cs" },
   { text: "Pokračuj v tom! ✨", lang: "cs" },
-  { text: "Za skvělý obsah! ��", lang: "cs" }
+  { text: "Za skvělý obsah! 🌟", lang: "cs" }
 ];
 
 const FallingDonut = ({ onCatch }: { onCatch: (x: number, y: number) => void }) => {
@@ -170,22 +170,30 @@ export default function DonnutLanding() {
   const [donuts, setDonuts] = useState<number[]>([]);
   const [popups, setPopups] = useState<{ id: number; x: number; y: number; amount: number }[]>([]);
   const [nextId, setNextId] = useState(0);
+  const howItWorksRef = useRef(null);
+  const isHowItWorksInView = useInView(howItWorksRef);
 
   // Add new donuts periodically
   useEffect(() => {
+    if (isHowItWorksInView) {
+      // Clear existing donuts when section comes into view
+      setDonuts([]);
+      return;
+    }
+
     const interval = setInterval(() => {
       // Add multiple donuts at once for a more dense effect
       const newDonuts = Array(3).fill(0).map(() => Date.now() + Math.random());
       setDonuts(prev => [...prev, ...newDonuts]);
-    }, 2000); // Increased from 1000ms to 2000ms for slower spawns
+    }, 2000);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [isHowItWorksInView]);
 
   // Remove old donuts
   useEffect(() => {
     const cleanup = setInterval(() => {
-      setDonuts(prev => prev.filter(d => Date.now() - d < 14000)); // Increased from 7000ms to 14000ms for longer lifetime
+      setDonuts(prev => prev.filter(d => Date.now() - d < 14000));
     }, 1000);
 
     return () => clearInterval(cleanup);
@@ -207,15 +215,6 @@ export default function DonnutLanding() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#F5E6CC] via-[#FFE5E5] to-[#F5E6CC]">
-      {/* Falling Donuts */}
-      <div className="fixed inset-0 pointer-events-none">
-        <div className="relative w-full h-full pointer-events-auto">
-          {donuts.map(key => (
-            <FallingDonut key={key} onCatch={handleCatch} />
-          ))}
-        </div>
-      </div>
-
       {/* Donation Popups */}
       <AnimatePresence>
         {popups.map(popup => (
@@ -231,9 +230,18 @@ export default function DonnutLanding() {
       <Header />
 
       {/* Hero Section */}
-      <section className="pt-16 pb-20 px-4 sm:px-6 lg:px-8">
+      <section className="pt-16 pb-20 px-4 sm:px-6 lg:px-8 relative">
+        {/* Falling Donuts */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          <div className="relative w-full h-full">
+            {donuts.map(key => (
+              <FallingDonut key={key} onCatch={handleCatch} />
+            ))}
+          </div>
+        </div>
+
         <motion.div 
-          className="max-w-4xl mx-auto text-center"
+          className="max-w-4xl mx-auto text-center relative z-10"
           initial="initial"
           animate="animate"
           variants={staggerContainer}
@@ -760,7 +768,7 @@ export default function DonnutLanding() {
             Join the donnut revolution and start supporting your favorite creators today!
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-8">
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
             <Button
               size="lg"
               className="rounded-full px-8 py-6 text-lg font-semibold text-white shadow-xl transition-all duration-200 transform hover:scale-105 hover:shadow-2xl"
@@ -779,22 +787,6 @@ export default function DonnutLanding() {
               Creator Dashboard
               <ChevronRight className="ml-2 h-5 w-5" />
             </Button>
-          </div>
-
-          <div className="max-w-md mx-auto">
-            <div className="flex gap-2">
-              <Input
-                placeholder="Enter Creator's Page"
-                className="rounded-full border-2 flex-1"
-                style={{ borderColor: "#A076F9" }}
-              />
-              <Button className="rounded-full px-6 text-white" style={{ backgroundColor: "#A076F9" }}>
-                Go
-              </Button>
-            </div>
-            <p className="text-sm mt-2 opacity-75" style={{ color: "#5D4037" }}>
-              Find and support your favorite creator instantly
-            </p>
           </div>
         </div>
       </section>

@@ -8,6 +8,7 @@ import { ArrowDown, Copy, Gift, Menu } from 'lucide-react';
 import Link from 'next/link';
 import { WalletButton } from '@/components/WalletButton';
 import { Textarea } from '@/components/ui/textarea';
+import { Footer } from '@/components/footer';
 
 interface PaymentPageClientProps {
   linkId: string;
@@ -267,33 +268,7 @@ export default function PaymentPageClient({ linkId }: PaymentPageClientProps) {
         </div>
       </div>
 
-      {/* Footer */}
-      <footer className="border-t border-opacity-20 border-gray-400 bg-white bg-opacity-50 py-8 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-6xl mx-auto">
-          <div className="flex flex-col md:flex-row justify-between items-center">
-            <div className="flex items-center mb-4 md:mb-0">
-              <img src="/logo.svg" alt="Donnut logo" className="w-8 h-8 rounded-full mr-2" />
-              <span className="text-2xl font-bold" style={{ color: "#5D4037" }}>
-                donnut
-              </span>
-            </div>
-            <div className="flex space-x-6">
-              <Link href="#" className="opacity-75 hover:opacity-100" style={{ color: "#5D4037" }}>
-                Twitter
-              </Link>
-              <Link href="#" className="opacity-75 hover:opacity-100" style={{ color: "#5D4037" }}>
-                GitHub
-              </Link>
-              <Link href="#" className="opacity-75 hover:opacity-100" style={{ color: "#5D4037" }}>
-                Terms
-              </Link>
-              <Link href="#" className="opacity-75 hover:opacity-100" style={{ color: "#5D4037" }}>
-                Privacy
-              </Link>
-            </div>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 } 
