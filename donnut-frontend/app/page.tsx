@@ -1,3 +1,5 @@
+'use client';
+
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -21,329 +23,386 @@ import {
 import Link from "next/link"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
+import { motion, AnimatePresence } from "framer-motion"
+import { useRouter } from "next/navigation"
+
+const fadeInUp = {
+  initial: { opacity: 0, y: 20 },
+  animate: { opacity: 1, y: 0 },
+  transition: { duration: 0.5 }
+}
+
+const staggerContainer = {
+  animate: {
+    transition: {
+      staggerChildren: 0.1
+    }
+  }
+}
 
 export default function DonnutLanding() {
+  const router = useRouter()
+
   return (
-    <div className="min-h-screen" style={{ backgroundColor: "#F5E6CC" }}>
+    <div className="min-h-screen bg-gradient-to-br from-[#F5E6CC] via-[#FFE5E5] to-[#F5E6CC]">
       <Header />
 
       {/* Hero Section */}
       <section className="pt-16 pb-20 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-4xl mx-auto text-center">
-          <div className="flex justify-center items-center mb-6">
-            <div className="flex items-center space-x-1">
-              {[...Array(5)].map((_, i) => (
-                <Star key={i} className="w-5 h-5 fill-current text-yellow-400" />
-              ))}
-            </div>
-            <span className="ml-3 text-sm font-medium" style={{ color: "#5D4037" }}>
-              Loved by 10,000+ Web3 creators
+        <motion.div 
+          className="max-w-4xl mx-auto text-center"
+          initial="initial"
+          animate="animate"
+          variants={staggerContainer}
+        >
+          <motion.div 
+            className="flex justify-center items-center mb-6"
+            variants={fadeInUp}
+          >
+            <span className="text-lg font-medium bg-gradient-to-r from-[#A076F9] to-[#40C5E0] bg-clip-text text-transparent">
+              Sprinkle Some Magic into Web3 Creativity ✨
             </span>
-          </div>
+          </motion.div>
 
-          <h1 className="text-5xl md:text-6xl font-bold mb-6 leading-tight" style={{ color: "#5D4037" }}>
+          <motion.h1 
+            className="text-5xl md:text-6xl font-bold mb-6 leading-tight"
+            variants={fadeInUp}
+            style={{ color: "#5D4037" }}
+          >
             The Sweetest Way to Support Creativity in <span style={{ color: "#A076F9" }}>Web3</span>
-          </h1>
+          </motion.h1>
 
-          <p className="text-xl mb-8 max-w-2xl mx-auto leading-relaxed" style={{ color: "#5D4037" }}>
+          <motion.p 
+            className="text-xl mb-8 max-w-2xl mx-auto leading-relaxed"
+            variants={fadeInUp}
+            style={{ color: "#5D4037" }}
+          >
             Fans donate seamlessly from any blockchain. Creators receive USDC on Flow. Sweet and simple.
-          </p>
+          </motion.p>
 
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12">
-            <Button
-              size="lg"
-              className="rounded-full px-8 py-6 text-lg font-semibold text-white shadow-xl transition-all duration-200 transform hover:scale-105 hover:shadow-2xl"
-              style={{ backgroundColor: "#A076F9" }}
+          <motion.div 
+            className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12"
+            variants={fadeInUp}
+          >
+            <motion.div
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
             >
-              Send a Donnut Now
-              <ChevronRight className="ml-2 h-5 w-5" />
-            </Button>
-            <Button
-              size="lg"
-              variant="outline"
-              className="rounded-full px-8 py-6 text-lg font-semibold border-2"
-              style={{ borderColor: "#A076F9", color: "#A076F9" }}
+              <Button
+                size="lg"
+                className="rounded-full px-8 py-6 text-lg font-semibold text-white shadow-xl transition-all duration-200"
+                style={{ backgroundColor: "#A076F9" }}
+              >
+                Send a Donnut Now
+                <ChevronRight className="ml-2 h-5 w-5" />
+              </Button>
+            </motion.div>
+            <motion.div
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
             >
-              I'm a Creator
-            </Button>
-          </div>
+              <Button
+                size="lg"
+                variant="outline"
+                className="rounded-full px-8 py-6 text-lg font-semibold border-2"
+                style={{ borderColor: "#A076F9", color: "#A076F9" }}
+                onClick={() => router.push('/dashboard')}
+              >
+                Dashboard
+                <ChevronRight className="ml-2 h-5 w-5" />
+              </Button>
+            </motion.div>
+          </motion.div>
 
-          <div className="relative max-w-3xl mx-auto">
-            <div className="bg-white bg-opacity-60 backdrop-blur-sm rounded-3xl p-8 shadow-xl">
+          <motion.div 
+            className="relative max-w-3xl mx-auto"
+            variants={fadeInUp}
+          >
+            <div className="bg-white bg-opacity-60 backdrop-blur-sm rounded-3xl p-8 shadow-xl hover:shadow-2xl transition-shadow duration-300">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="text-center">
-                  <div
-                    className="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center"
-                    style={{ backgroundColor: "#40C5E0" }}
+                {[
+                  {
+                    icon: Coins,
+                    color: "#40C5E0",
+                    title: "Any Crypto",
+                    description: "From any blockchain"
+                  },
+                  {
+                    icon: ArrowRightLeft,
+                    color: "#A076F9",
+                    title: "1inch Cross-chain Swap",
+                    description: "Seamless Bridging: Fast, secure cross-chain swaps using escrow functionality."
+                  },
+                  {
+                    icon: Gift,
+                    color: "#FFCAD4",
+                    title: "USDC Delivery",
+                    description: "Direct to creators"
+                  }
+                ].map((item, index) => (
+                  <motion.div
+                    key={index}
+                    className="text-center"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.2 }}
                   >
-                    <Coins className="w-8 h-8 text-white" />
-                  </div>
-                  <h3 className="font-semibold mb-2" style={{ color: "#5D4037" }}>
-                    Any Crypto
-                  </h3>
-                  <p className="text-sm opacity-75" style={{ color: "#5D4037" }}>
-                    From any blockchain
-                  </p>
-                </div>
-                <div className="text-center">
-                  <div
-                    className="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center"
-                    style={{ backgroundColor: "#A076F9" }}
-                  >
-                    <ArrowRightLeft className="w-8 h-8 text-white" />
-                  </div>
-                  <h3 className="font-semibold mb-2" style={{ color: "#5D4037" }}>
-                    1inch Cross-chain Swap
-                  </h3>
-                  <p className="text-sm opacity-75" style={{ color: "#5D4037" }}>
-                    Seamless Bridging: Fast, secure cross-chain swaps using escrow functionality.
-                  </p>
-                </div>
-                <div className="text-center">
-                  <div
-                    className="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center"
-                    style={{ backgroundColor: "#FFCAD4" }}
-                  >
-                    <Gift className="w-8 h-8 text-white" />
-                  </div>
-                  <h3 className="font-semibold mb-2" style={{ color: "#5D4037" }}>
-                    USDC Delivery
-                  </h3>
-                  <p className="text-sm opacity-75" style={{ color: "#5D4037" }}>
-                    Direct to creators
-                  </p>
-                </div>
+                    <motion.div
+                      whileHover={{ scale: 1.1, rotate: 360 }}
+                      transition={{ duration: 0.5 }}
+                      className="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center"
+                      style={{ backgroundColor: item.color }}
+                    >
+                      <item.icon className="w-8 h-8 text-white" />
+                    </motion.div>
+                    <h3 className="font-semibold mb-2" style={{ color: "#5D4037" }}>
+                      {item.title}
+                    </h3>
+                    <p className="text-sm opacity-75" style={{ color: "#5D4037" }}>
+                      {item.description}
+                    </p>
+                  </motion.div>
+                ))}
               </div>
             </div>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       </section>
 
       {/* How It Works Section */}
-      <section id="how-it-works" className="py-20 px-4 sm:px-6 lg:px-8 bg-white bg-opacity-50">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-16">
+      <section id="how-it-works" className="py-20 px-4 sm:px-6 lg:px-8 bg-white bg-opacity-50 backdrop-blur-sm">
+        <motion.div 
+          className="max-w-6xl mx-auto"
+          initial="initial"
+          whileInView="animate"
+          viewport={{ once: true }}
+          variants={staggerContainer}
+        >
+          <motion.div 
+            className="text-center mb-16"
+            variants={fadeInUp}
+          >
             <h2 className="text-4xl font-bold mb-4" style={{ color: "#5D4037" }}>
               Your Donnut, Made Fresh in 3 Simple Steps
             </h2>
             <p className="text-xl opacity-75" style={{ color: "#5D4037" }}>
               The magic behind every sweet donation
             </p>
-          </div>
+          </motion.div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <Card className="border-0 shadow-lg rounded-3xl bg-white bg-opacity-80 backdrop-blur-sm">
-              <CardContent className="p-8 text-center">
-                <div
-                  className="w-20 h-20 mx-auto mb-6 rounded-full flex items-center justify-center"
-                  style={{ backgroundColor: "#40C5E0" }}
-                >
-                  <Coins className="w-10 h-10 text-white" />
-                </div>
-                <Badge className="mb-4 rounded-full" style={{ backgroundColor: "#40C5E0", color: "white" }}>
-                  Step 1
-                </Badge>
-                <h3 className="text-xl font-bold mb-4" style={{ color: "#5D4037" }}>
-                  Pick Your Crypto & Message
-                </h3>
-                <p style={{ color: "#5D4037" }}>
-                  Fans choose any token, any chain, and add a personal touch to their donation.
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card className="border-0 shadow-lg rounded-3xl bg-white bg-opacity-80 backdrop-blur-sm">
-              <CardContent className="p-8 text-center">
-                <div
-                  className="w-20 h-20 mx-auto mb-6 rounded-full flex items-center justify-center"
-                  style={{ backgroundColor: "#A076F9" }}
-                >
-                  <ArrowRightLeft className="w-10 h-10 text-white" />
-                </div>
-                <Badge className="mb-4 rounded-full" style={{ backgroundColor: "#A076F9", color: "white" }}>
-                  Step 2
-                </Badge>
-                <h3 className="text-xl font-bold mb-4" style={{ color: "#5D4037" }}>
-                  1inch Cross-chain Swap
-                </h3>
-                <p style={{ color: "#5D4037" }}>
-                  We instantly convert to USDC and bridge to Flow using 1inch Cross-chain Swap (Fusion+).
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card className="border-0 shadow-lg rounded-3xl bg-white bg-opacity-80 backdrop-blur-sm">
-              <CardContent className="p-8 text-center">
-                <div
-                  className="w-20 h-20 mx-auto mb-6 rounded-full flex items-center justify-center"
-                  style={{ backgroundColor: "#FFCAD4" }}
-                >
-                  <Gift className="w-10 h-10 text-white" />
-                </div>
-                <Badge className="mb-4 rounded-full" style={{ backgroundColor: "#FFCAD4", color: "white" }}>
-                  Step 3
-                </Badge>
-                <h3 className="text-xl font-bold mb-4" style={{ color: "#5D4037" }}>
-                  Sweet Delivery
-                </h3>
-                <p style={{ color: "#5D4037" }}>Creators get USDC directly on Flow, hassle-free and ready to use.</p>
-              </CardContent>
-            </Card>
+            {[
+              {
+                icon: Coins,
+                color: "#40C5E0",
+                step: "Step 1",
+                title: "Pick Your Crypto & Message",
+                description: "Fans choose any token, any chain, and add a personal touch to their donation."
+              },
+              {
+                icon: ArrowRightLeft,
+                color: "#A076F9",
+                step: "Step 2",
+                title: "1inch Cross-chain Swap",
+                description: "We instantly convert to USDC and bridge to Flow using 1inch Cross-chain Swap (Fusion+)."
+              },
+              {
+                icon: Gift,
+                color: "#FFCAD4",
+                step: "Step 3",
+                title: "Sweet Delivery",
+                description: "Creators get USDC directly on Flow, hassle-free and ready to use."
+              }
+            ].map((item, index) => (
+              <motion.div
+                key={index}
+                variants={fadeInUp}
+                whileHover={{ y: -10 }}
+              >
+                <Card className="border-0 shadow-lg rounded-3xl bg-white bg-opacity-80 backdrop-blur-sm hover:shadow-2xl transition-all duration-300">
+                  <CardContent className="p-8 text-center">
+                    <motion.div
+                      whileHover={{ scale: 1.1, rotate: 360 }}
+                      transition={{ duration: 0.5 }}
+                      className="w-20 h-20 mx-auto mb-6 rounded-full flex items-center justify-center"
+                      style={{ backgroundColor: item.color }}
+                    >
+                      <item.icon className="w-10 h-10 text-white" />
+                    </motion.div>
+                    <Badge className="mb-4 rounded-full" style={{ backgroundColor: item.color, color: "white" }}>
+                      {item.step}
+                    </Badge>
+                    <h3 className="text-xl font-bold mb-4" style={{ color: "#5D4037" }}>
+                      {item.title}
+                    </h3>
+                    <p style={{ color: "#5D4037" }}>
+                      {item.description}
+                    </p>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            ))}
           </div>
-        </div>
+        </motion.div>
       </section>
 
       {/* Benefits Section */}
       <section className="py-20 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-6xl mx-auto">
+        <motion.div 
+          className="max-w-6xl mx-auto"
+          initial="initial"
+          whileInView="animate"
+          viewport={{ once: true }}
+          variants={staggerContainer}
+        >
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
             {/* For Fans */}
-            <div id="for-fans">
+            <motion.div 
+              id="for-fans"
+              variants={fadeInUp}
+            >
               <h2 className="text-3xl font-bold mb-8" style={{ color: "#5D4037" }}>
                 A Treat for Fans Too! 🎉
               </h2>
               <div className="space-y-6">
-                <div className="flex items-start space-x-4">
-                  <div
-                    className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0"
-                    style={{ backgroundColor: "#40C5E0" }}
+                {[
+                  {
+                    icon: Coins,
+                    color: "#40C5E0",
+                    title: "Donate with Any Crypto",
+                    description: "Use Bitcoin, Ethereum, or any token from any blockchain"
+                  },
+                  {
+                    icon: Mail,
+                    color: "#FFCAD4",
+                    title: "Email Verification",
+                    description: "Easy Web2 Onboarding: Simple email verification."
+                  },
+                  {
+                    icon: Heart,
+                    color: "#A076F9",
+                    title: "Personalize Your Support",
+                    description: "Add messages that last forever on Filecoin"
+                  }
+                ].map((item, index) => (
+                  <motion.div
+                    key={index}
+                    className="flex items-start space-x-4"
+                    variants={fadeInUp}
+                    whileHover={{ x: 10 }}
                   >
-                    <Coins className="w-6 h-6 text-white" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold mb-2" style={{ color: "#5D4037" }}>
-                      Donate with Any Crypto
-                    </h3>
-                    <p className="opacity-75" style={{ color: "#5D4037" }}>
-                      Use Bitcoin, Ethereum, or any token from any blockchain
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-start space-x-4">
-                  <div
-                    className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0"
-                    style={{ backgroundColor: "#FFCAD4" }}
-                  >
-                    <Mail className="w-6 h-6 text-white" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold mb-2" style={{ color: "#5D4037" }}>
-                      Email Verification
-                    </h3>
-                    <p className="opacity-75" style={{ color: "#5D4037" }}>
-                      Easy Web2 Onboarding: Simple email verification.
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-start space-x-4">
-                  <div
-                    className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0"
+                    <motion.div
+                      whileHover={{ scale: 1.1, rotate: 360 }}
+                      transition={{ duration: 0.5 }}
+                      className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0"
+                      style={{ backgroundColor: item.color }}
+                    >
+                      <item.icon className="w-6 h-6 text-white" />
+                    </motion.div>
+                    <div>
+                      <h3 className="font-semibold mb-2" style={{ color: "#5D4037" }}>
+                        {item.title}
+                      </h3>
+                      <p className="opacity-75" style={{ color: "#5D4037" }}>
+                        {item.description}
+                      </p>
+                    </div>
+                  </motion.div>
+                ))}
+                <motion.div
+                  whileHover={{ scale: 1.02 }}
+                  className="mt-8"
+                >
+                  <Button
+                    size="lg"
+                    className="w-full rounded-full text-white font-semibold shadow-xl"
                     style={{ backgroundColor: "#A076F9" }}
                   >
-                    <Heart className="w-6 h-6 text-white" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold mb-2" style={{ color: "#5D4037" }}>
-                      Personalize Your Support
-                    </h3>
-                    <p className="opacity-75" style={{ color: "#5D4037" }}>
-                      Add messages that last forever on Filecoin
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-start space-x-4">
-                  <div
-                    className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0"
-                    style={{ backgroundColor: "#40C5E0" }}
-                  >
-                    <Star className="w-6 h-6 text-white" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold mb-2" style={{ color: "#5D4037" }}>
-                      Bonus Sprinkles
-                    </h3>
-                    <p className="opacity-75" style={{ color: "#5D4037" }}>
-                      Random chance for exclusive NFT rewards!
-                    </p>
-                  </div>
-                </div>
+                    Send a Donnut
+                    <ChevronRight className="ml-2 h-5 w-5" />
+                  </Button>
+                </motion.div>
               </div>
-            </div>
+            </motion.div>
 
             {/* For Creators */}
-            <div id="for-creators">
+            <motion.div 
+              variants={fadeInUp}
+              className="bg-white bg-opacity-60 backdrop-blur-sm rounded-3xl p-8 shadow-xl hover:shadow-2xl transition-all duration-300"
+            >
               <h2 className="text-3xl font-bold mb-8" style={{ color: "#5D4037" }}>
-                Sweeten Your Stream, Simplify Your Income 🚀
+                For Creators 🎨
               </h2>
               <div className="space-y-6">
-                <div className="flex items-start space-x-4">
-                  <div
-                    className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0"
+                {[
+                  {
+                    icon: Shield,
+                    color: "#40C5E0",
+                    title: "Secure & Non-Custodial",
+                    description: "Your funds, your control. Direct deposits to your Flow wallet."
+                  },
+                  {
+                    icon: Zap,
+                    color: "#A076F9",
+                    title: "Lightning Fast",
+                    description: "Instant cross-chain swaps and settlements."
+                  },
+                  {
+                    icon: Globe,
+                    color: "#FFCAD4",
+                    title: "Global Reach",
+                    description: "Accept support from fans worldwide, any token, any chain."
+                  },
+                  {
+                    icon: FileText,
+                    color: "#40C5E0",
+                    title: "Smart Analytics",
+                    description: "Track donations and engagement in real-time."
+                  }
+                ].map((item, index) => (
+                  <motion.div
+                    key={index}
+                    className="flex items-start space-x-4"
+                    variants={fadeInUp}
+                    whileHover={{ x: 10 }}
+                  >
+                    <motion.div
+                      whileHover={{ scale: 1.1, rotate: 360 }}
+                      transition={{ duration: 0.5 }}
+                      className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0"
+                      style={{ backgroundColor: item.color }}
+                    >
+                      <item.icon className="w-6 h-6 text-white" />
+                    </motion.div>
+                    <div>
+                      <h3 className="font-semibold mb-2" style={{ color: "#5D4037" }}>
+                        {item.title}
+                      </h3>
+                      <p className="opacity-75" style={{ color: "#5D4037" }}>
+                        {item.description}
+                      </p>
+                    </div>
+                  </motion.div>
+                ))}
+
+                <motion.div
+                  whileHover={{ scale: 1.02 }}
+                  className="mt-8"
+                >
+                  <Button
+                    size="lg"
+                    className="w-full rounded-full text-white font-semibold shadow-xl"
                     style={{ backgroundColor: "#A076F9" }}
+                    onClick={() => router.push('/dashboard')}
                   >
-                    <Shield className="w-6 h-6 text-white" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold mb-2" style={{ color: "#5D4037" }}>
-                      One Token, Zero Fuss
-                    </h3>
-                    <p className="opacity-75" style={{ color: "#5D4037" }}>
-                      Receive everything as USDC on Flow - no managing multiple tokens
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-start space-x-4">
-                  <div
-                    className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0"
-                    style={{ backgroundColor: "#40C5E0" }}
-                  >
-                    <Globe className="w-6 h-6 text-white" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold mb-2" style={{ color: "#5D4037" }}>
-                      Expand Your Audience
-                    </h3>
-                    <p className="opacity-75" style={{ color: "#5D4037" }}>
-                      Web2-friendly onboarding brings new supporters
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-start space-x-4">
-                  <div
-                    className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0"
-                    style={{ backgroundColor: "#FFCAD4" }}
-                  >
-                    <Heart className="w-6 h-6 text-white" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold mb-2" style={{ color: "#5D4037" }}>
-                      Build Deeper Fan Connections
-                    </h3>
-                    <p className="opacity-75" style={{ color: "#5D4037" }}>
-                      Permanent messages create lasting relationships
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-start space-x-4">
-                  <div
-                    className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0"
-                    style={{ backgroundColor: "#A076F9" }}
-                  >
-                    <Eye className="w-6 h-6 text-white" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold mb-2" style={{ color: "#5D4037" }}>
-                      Transparent & Fair
-                    </h3>
-                    <p className="opacity-75" style={{ color: "#5D4037" }}>
-                      Every transaction visible on Blockscout
-                    </p>
-                  </div>
-                </div>
+                    Creator Dashboard
+                    <ChevronRight className="ml-2 h-5 w-5" />
+                  </Button>
+                </motion.div>
               </div>
-            </div>
+            </motion.div>
           </div>
-        </div>
+        </motion.div>
       </section>
 
       {/* Tech Stack Section */}
@@ -485,16 +544,9 @@ export default function DonnutLanding() {
                 <h3 className="font-semibold mb-2" style={{ color: "#5D4037" }}>
                   Transaction Transparency
                 </h3>
-                <p className="text-sm opacity-75 mb-4" style={{ color: "#5D4037" }}>
+                <p className="text-sm opacity-75" style={{ color: "#5D4037" }}>
                   Every donation tracked on Blockscout for complete visibility
                 </p>
-                <Button
-                  variant="outline"
-                  className="rounded-full border-2"
-                  style={{ borderColor: "#40C5E0", color: "#40C5E0" }}
-                >
-                  View on Blockscout
-                </Button>
               </div>
               <div className="text-center">
                 <div
@@ -506,16 +558,9 @@ export default function DonnutLanding() {
                 <h3 className="font-semibold mb-2" style={{ color: "#5D4037" }}>
                   Permanent Messages
                 </h3>
-                <p className="text-sm opacity-75 mb-4" style={{ color: "#5D4037" }}>
+                <p className="text-sm opacity-75" style={{ color: "#5D4037" }}>
                   Fan messages stored immutably on Filecoin forever
                 </p>
-                <Button
-                  variant="outline"
-                  className="rounded-full border-2"
-                  style={{ borderColor: "#A076F9", color: "#A076F9" }}
-                >
-                  Learn More
-                </Button>
               </div>
             </div>
           </div>
@@ -546,8 +591,10 @@ export default function DonnutLanding() {
               variant="outline"
               className="rounded-full px-8 py-6 text-lg font-semibold border-2"
               style={{ borderColor: "#A076F9", color: "#A076F9" }}
+              onClick={() => router.push('/dashboard')}
             >
-              Creator Sign Up
+              Creator Dashboard
+              <ChevronRight className="ml-2 h-5 w-5" />
             </Button>
           </div>
 
