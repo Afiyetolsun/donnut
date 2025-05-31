@@ -83,6 +83,8 @@ const FallingDonut = ({ onCatch }: { onCatch: (x: number, y: number) => void }) 
     80 + Math.random() * 20;
   const duration = 6 + Math.random() * 6;
   const [isCaught, setIsCaught] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
+  const showClickMe = useMemo(() => Math.random() < 0.1, []); // 10% chance to show "Click me!"
 
   useEffect(() => {
     controls.start({
@@ -120,11 +122,30 @@ const FallingDonut = ({ onCatch }: { onCatch: (x: number, y: number) => void }) 
         position: "absolute", 
         cursor: "pointer", 
         fontSize: "2rem",
-        pointerEvents: isCaught ? "none" : "auto" 
+        pointerEvents: isCaught ? "none" : "auto",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        gap: "0.5rem"
       }}
       onClick={handleClick}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
       whileHover={{ scale: 1.2 }}
     >
+      {showClickMe && (
+        <motion.div
+          animate={{ 
+            opacity: isHovered ? 1 : 0.7,
+            y: isHovered ? 0 : 5,
+            scale: isHovered ? 1.1 : 1
+          }}
+          transition={{ duration: 0.2 }}
+          className="text-sm font-medium text-white bg-black/50 px-2 py-1 rounded-full"
+        >
+          Click me!
+        </motion.div>
+      )}
       🍩
     </motion.div>
   );
