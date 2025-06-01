@@ -4,24 +4,39 @@
 
 import React, { useState, useEffect } from 'react'
 import {
-  SDK,
-  PresetEnum,
-  HashLock,
-  OrderStatus,
-  ReadyToAcceptSecretFills,
-} from '@1inch/cross-chain-sdk'
-import {
   BrowserProvider,
   JsonRpcSigner,
   Contract,
   hexlify,
   randomBytes,
-  parseUnits, // Added
+  parseUnits,
 } from 'ethers'
 import { useEthersPrivy } from '../hooks/useEthersPrivy'
-import { BrowserBlockchainProvider } from '../lib/BrowserBlockchainProvider'
 import { Button } from './ui/button'
 import { SUPPORTED_CHAINS, getChainByName, Chain } from '../lib/chains'
+
+// Define types that were previously imported from @1inch/cross-chain-sdk
+// These will be used for API request/response types
+enum PresetEnum {
+  none = 0,
+  fast = 1,
+  medium = 2,
+  slow = 3,
+}
+
+enum OrderStatus {
+  Created = 'created',
+  Filling = 'filling',
+  PartialFilled = 'partial-filled',
+  Executed = 'executed',
+  Expired = 'expired',
+  Cancelled = 'cancelled',
+  Refunded = 'refunded',
+}
+
+interface ReadyToAcceptSecretFills {
+  fills: any[]; // Simplified, adjust as needed
+}
 
 interface CrossChainFormProps {
   receiverAddress: string;
@@ -192,37 +207,84 @@ export function CrossChainForm(props: CrossChainFormProps) {
       }
     }
 
-    setStatusText('3) Initializing Fusion+ SDK…')
-    const bcProvider = new BrowserBlockchainProvider(signer, provider)
-    const sdk = new SDK({
-      url: 'https://api.1inch.dev/fusion-plus',
-      authKey: AUTH_KEY,
-      blockchainProvider: bcProvider,
-    })
-
-    setStatusText('4) Fetching quote from 1inch Fusion+…')
-    let quote
+    // No SDK initialization on client side
+    setStatusText('3) Fetching quote from backend…')
+    let quote;
     try {
-      quote = await sdk.getQuote({
+      console.log('[CrossChainForm] Calling /api/get-quote with:', {
         srcChainId: props.srcChainIdFromTokenSelector,
         dstChainId: dstChain.id,
-        srcTokenAddress: effectiveSrcTokenAddress, // Use effective address
+        srcTokenAddress: effectiveSrcTokenAddress,
         dstTokenAddress: dstTokenAddress,
-        amount: finalAmountInBaseUnits,      // Already in base units
-        enableEstimate: true,
+        amount: finalAmountInBaseUnits,
         walletAddress: userAddress,
-      })
+      });
+      const response = await fetch('/api/get-quote', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          srcChainId: props.srcChainIdFromTokenSelector,
+          dstChainId: dstChain.id,
+          srcTokenAddress: effectiveSrcTokenAddress,
+          dstTokenAddress: dstTokenAddress,
+          amount: finalAmountInBaseUnits,
+          enableEstimate: true,
+          walletAddress: userAddress,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to fetch quote from backend');
+      }
+      quote = await response.json();
+      console.log('[CrossChainForm] Received quote from backend:', quote);
+      console.log('[CrossChainForm] quote.srcEscrowFactory:', quote.srcEscrowFactory);
     } catch (err) {
-      console.error(err)
-      setStatusText('❌ Error fetching quote—check console.')
-      setIsRunning(false)
-      return
+      console.error(err);
+      setStatusText(`❌ Error fetching quote from backend: ${err instanceof Error ? err.message : 'Unknown error'}`);
+      setIsRunning(false);
+      return;
     }
 
     // Allowance check for the effective source token (could be WETH or original ERC20)
     setStatusText('5) Checking ERC-20 allowance…')
-    const spender = quote.srcEscrowFactory.toString()
+    let spender: string | null = null;
+    if (quote.srcEscrowFactory) {
+      if (typeof quote.srcEscrowFactory === 'string') {
+        spender = quote.srcEscrowFactory;
+      } else if (typeof quote.srcEscrowFactory === 'object' && quote.srcEscrowFactory.val && typeof quote.srcEscrowFactory.val === 'string') {
+        // Check for .val property based on new logs
+        spender = quote.srcEscrowFactory.val;
+      } else if (typeof quote.srcEscrowFactory === 'object' && quote.srcEscrowFactory.address && typeof quote.srcEscrowFactory.address === 'string') {
+        // Keep the .address check as a fallback
+        spender = quote.srcEscrowFactory.address;
+      } else {
+        // Fallback if it's an object but not matching known structures
+        spender = quote.srcEscrowFactory.toString(); 
+      }
+    }
+    
+    console.log('[CrossChainForm] Determined spender:', spender, 'from quote.srcEscrowFactory:', quote.srcEscrowFactory);
+
+    if (!spender || spender === '[object Object]' || !/^0x[a-fA-F0-9]{40}$/.test(spender)) {
+      console.error("[CrossChainForm] Spender address is invalid or not a valid Ethereum address. Spender:", spender, "Quote:", quote);
+      setStatusText('❌ Error: Spender address invalid or not available from quote.');
+      setIsRunning(false);
+      return;
+    }
     const tokenAmt = BigInt(finalAmountInBaseUnits)
+
+    console.log('[CrossChainForm] Allowance Check Details:', {
+      userAddress,
+      spender,
+      effectiveSrcTokenAddress,
+      tokenAmount: finalAmountInBaseUnits,
+      isSignerAvailable: !!signer,
+      currentChainId: chainId,
+      expectedChainId: props.srcChainIdFromTokenSelector,
+    });
+
     const erc20 = new Contract(
       effectiveSrcTokenAddress, // Use effective address
       [
@@ -236,7 +298,7 @@ export function CrossChainForm(props: CrossChainFormProps) {
     try {
       currentAllowance = await erc20.allowance(userAddress, spender)
     } catch (err) {
-      console.error(err)
+      console.error("Error during erc20.allowance call:", err);
       setStatusText('❌ Failed to read allowance.')
       setIsRunning(false)
       return
@@ -261,117 +323,248 @@ export function CrossChainForm(props: CrossChainFormProps) {
       setStatusText(`✅ Existing allowance ${currentAllowance.toString()} is sufficient.`)
     }
 
-    // 5) Build secrets & hashLock
-    setStatusText('5) Building secrets & hashLock…')
-    const secretsCount = quote.getPreset().secretsCount
-    const secrets: string[] = Array.from({ length: secretsCount }).map(() =>
-      hexlify(randomBytes(32))
-    )
-    const secretHashes = secrets.map((s) => HashLock.hashSecret(s))
-    const hashLock =
-      secretsCount === 1
-        ? HashLock.forSingleFill(secrets[0])
-        : HashLock.forMultipleFills(HashLock.getMerkleLeaves(secrets))
+    // 5) Generate secrets & hashLock via backend API
+    setStatusText('5) Generating secrets & hashLock via backend…')
+    let secrets: string[];
+    let secretHashes: string[];
+    let hashLock: any; // Type will be determined by backend response
+    try {
+      // Access secretsCount from the plain quote object structure
+      // Assuming 'fast' preset is used, as it is in placeOrder
+      const secretsCount = quote.presets?.fast?.secretsCount;
+      if (typeof secretsCount !== 'number') {
+        console.error("Error: Could not determine secretsCount from quote. Quote presets:", quote.presets);
+        setStatusText('❌ Error: Could not determine secretsCount for hashLock generation.');
+        setIsRunning(false);
+        return;
+      }
+
+      const response = await fetch('/api/generate-secrets-and-hashlock', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ secretsCount }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to generate secrets and hashLock from backend');
+      }
+      const data = await response.json();
+      secrets = data.secrets;
+      secretHashes = data.secretHashes;
+      hashLock = data.hashLock;
+    } catch (err) {
+      console.error(err);
+      setStatusText(`❌ Error generating secrets and hashLock from backend: ${err instanceof Error ? err.message : 'Unknown error'}`);
+      setIsRunning(false);
+      return;
+    }
 
     // 6) Place order (Privy will ask you to sign the EIP-712 payload)
-    setStatusText('6) Placing order (Privy will prompt for signature)…')
-    let orderResponse
+    // 6) Place order by calling backend API (Privy will still prompt for signature)
+    setStatusText('6) Placing order via backend API (Privy will prompt for signature)…')
+    let placeOrderApiResp; // Will contain { orderHash, typedDataToSign }
     try {
-      orderResponse = await sdk.placeOrder(quote, {
+      const placeOrderPayload = {
+        quote, 
         walletAddress: userAddress,
-        receiver: props.receiverAddress, // Use prop here
-        preset: PresetEnum.fast,
+        receiver: props.receiverAddress,
+        preset: PresetEnum.fast, // Client sends 1
         source: 'privy-frontend',
-        hashLock,
-        secretHashes,
-      })
-    } catch (err) {
-      console.error(err)
-      setStatusText('❌ Order placement failed or was rejected.')
-      setIsRunning(false)
-      return
-    }
-    const orderHash = orderResponse.orderHash
-    setStatusText(`✅ Order placed. OrderHash = ${orderHash}`)
+        srcChainId: props.srcChainIdFromTokenSelector,
+      };
+      console.log('[CrossChainForm] Calling /api/place-order with payload:', placeOrderPayload);
+      console.log('[CrossChainForm] Quote details for place-order:', {
+        quoteParamsSrcChainId: placeOrderPayload.quote?.params?.srcChainId,
+        quoteParamsDstChainId: placeOrderPayload.quote?.params?.dstChainId,
+        requestBodySrcChainId: placeOrderPayload.srcChainId,
+      });
 
-    // 7) Poll getReadyToAcceptSecretFills
-    let ready: ReadyToAcceptSecretFills
+      const response = await fetch('/api/place-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(placeOrderPayload),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to prepare order via backend API');
+      }
+      placeOrderApiResp = await response.json();
+      if (!placeOrderApiResp.typedDataToSign || !placeOrderApiResp.orderHash) {
+        throw new Error('Backend /api/place-order did not return typedDataToSign or orderHash');
+      }
+    } catch (err) {
+      console.error(err);
+      setStatusText(`❌ Order preparation failed: ${err instanceof Error ? err.message : 'Unknown error'}`);
+      setIsRunning(false);
+      return;
+    }
+
+    // 6.1) Sign the EIP-712 payload using Privy
+    setStatusText('6.1) Awaiting signature via Privy…');
+    let signature: string;
+    try {
+      if (!signer) throw new Error("Signer not available for signing typed data.");
+      // Privy's useEthers hook provides a signer that should handle signTypedData
+      // The structure of typedDataToSign should be { domain, types, message, primaryType }
+      // Ensure primaryType is correctly set or handled by the signer.
+      // Ethers v6 signer.signTypedData expects domain, types, value
+      const { domain, types, message } = placeOrderApiResp.typedDataToSign;
+      // Ethers v5/v6 compatibility: EIP712Domain might be part of types.
+      // If types.EIP712Domain exists, it should be removed for ethers v6 _signTypedData
+      const { EIP712Domain, ...messageTypes } = types; 
+      
+      console.log('[CrossChainForm] Signing typed data:', { domain, types: messageTypes, message });
+      signature = await signer.signTypedData(domain, messageTypes, message);
+      setStatusText('✅ Signature obtained.');
+    } catch (err) {
+      console.error("Error signing typed data:", err);
+      setStatusText(`❌ Signature failed or was rejected: ${err instanceof Error ? err.message : 'Unknown error'}`);
+      setIsRunning(false);
+      return;
+    }
+
+    // 6.2) Submit signed order to 1inch via backend API
+    setStatusText('6.2) Submitting signed order to 1inch…');
+    try {
+      const relayPayload = {
+        orderMessage: placeOrderApiResp.typedDataToSign.message,
+        signature,
+        srcChainId: props.srcChainIdFromTokenSelector,
+        quoteId: quote.quoteId, // Pass quoteId from the original quote
+      };
+      console.log('[CrossChainForm] Calling /api/relay-signed-order with payload:', relayPayload);
+      const relayResponse = await fetch('/api/relay-signed-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(relayPayload),
+      });
+
+      const relayResponseData = await relayResponse.json();
+      if (!relayResponse.ok) {
+        throw new Error(relayResponseData.error || `Failed to submit signed order (status ${relayResponse.status})`);
+      }
+      console.log('[CrossChainForm] Signed order submitted successfully:', relayResponseData);
+      // At this point, the order is submitted to 1inch.
+    } catch (err) {
+      console.error(err);
+      setStatusText(`❌ Order submission failed: ${err instanceof Error ? err.message : 'Unknown error'}`);
+      setIsRunning(false);
+      return;
+    }
+    
+    const orderHash = placeOrderApiResp.orderHash; // Use orderHash from /api/place-order response
+    setStatusText(`✅ Order submitted to 1inch. OrderHash = ${orderHash}. Now polling status...`);
+
+    // 7) Poll getReadyToAcceptSecretFills via backend API
+    let ready: ReadyToAcceptSecretFills;
     do {
-      setStatusText('7) Polling for escrow funding status…')
+      setStatusText('7) Polling for escrow funding status via backend…');
       try {
-        ready = await sdk.getReadyToAcceptSecretFills(orderHash)
+        const response = await fetch('/api/get-ready-to-accept-secret-fills', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ orderHash, srcChainId: props.srcChainIdFromTokenSelector }),
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Failed to poll ready to accept secret fills from backend');
+        }
+        ready = await response.json();
       } catch (err) {
-        console.error(err)
-        setStatusText('❌ Error polling getReadyToAcceptSecretFills.')
-        setIsRunning(false)
-        return
+        console.error(err);
+        setStatusText(`❌ Error polling getReadyToAcceptSecretFills from backend: ${err instanceof Error ? err.message : 'Unknown error'}`);
+        setIsRunning(false);
+        return;
       }
       if (ready.fills.length === 0) {
-        await new Promise((r) => setTimeout(r, 2000))
+        await new Promise((r) => setTimeout(r, 2000));
       }
-    } while (ready.fills.length === 0)
+    } while (ready.fills.length === 0);
 
-    setStatusText('✅ Escrows funded on both chains. Revealing secrets…')
+    setStatusText('✅ Escrows funded on both chains. Revealing secrets…');
 
-    // 8) Reveal each secret (Privy will prompt signature for each)
+    // 8) Reveal each secret via backend API (Privy will prompt signature for each)
     for (const secret of secrets) {
-      setStatusText(`8) Revealing secret ${secret} (Privy will ask to sign)…`)
+      setStatusText(`8) Revealing secret ${secret} via backend (Privy will ask to sign)…`);
       try {
-        await sdk.submitSecret(orderHash, secret)
+        const response = await fetch('/api/submit-secret', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ orderHash, secret, srcChainId: props.srcChainIdFromTokenSelector }),
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Failed to submit secret via backend');
+        }
+        await response.json(); // Or check for success status
       } catch (err) {
-        console.error(err)
-        setStatusText('❌ submitSecret failed or was rejected.')
-        setIsRunning(false)
-        return
+        console.error(err);
+        setStatusText(`❌ submitSecret failed or was rejected via backend: ${err instanceof Error ? err.message : 'Unknown error'}`);
+        setIsRunning(false);
+        return;
       }
       // Small delay if multiple secrets
-      await new Promise((r) => setTimeout(r, 1000))
+      await new Promise((r) => setTimeout(r, 1000));
     }
 
-    // 9) Poll getOrderStatus until we hit a terminal state
-    setStatusText('9) Polling final order status…')
+    // 9) Poll getOrderStatus until we hit a terminal state via backend API
+    setStatusText('9) Polling final order status via backend…');
     const terminalStates = [
       OrderStatus.Executed,
       OrderStatus.Expired,
       OrderStatus.Cancelled,
       OrderStatus.Refunded,
-    ]
-    let finalStatus: OrderStatus | null = null
+    ];
+    let finalStatus: OrderStatus; // Changed to non-nullable
     do {
-      let resp
+      let resp;
       try {
-        resp = await sdk.getOrderStatus(orderHash)
-      } catch (err) {
-        console.error(err)
-        setStatusText('❌ Error polling getOrderStatus.')
-        setIsRunning(false)
-        return
-      }
-      finalStatus = resp.status
-      setStatusText(`⏳ Current status: ${finalStatus}`)
-      if (terminalStates.includes(finalStatus)) break
-      await new Promise((r) => setTimeout(r, 2000))
-    } while (true)
+        const response = await fetch('/api/get-order-status', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ orderHash, srcChainId: props.srcChainIdFromTokenSelector }),
+        });
 
-    setStatusText(`✅ Done! Final status: ${finalStatus}`)
-    setIsRunning(false)
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Failed to get order status from backend');
+        }
+        resp = await response.json();
+      } catch (err) {
+        console.error(err);
+        setStatusText(`❌ Error polling getOrderStatus from backend: ${err instanceof Error ? err.message : 'Unknown error'}`);
+        setIsRunning(false);
+        return;
+      }
+      finalStatus = resp.status;
+      setStatusText(`⏳ Current status: ${finalStatus}`);
+      if (terminalStates.includes(finalStatus)) break;
+      await new Promise((r) => setTimeout(r, 2000));
+    } while (true);
+
+    setStatusText(`✅ Done! Final status: ${finalStatus}`);
+    setIsRunning(false);
   }
 
   return (
     <div className="border rounded p-4 my-4 shadow-sm">
       {!isReady && (
         <p className="text-sm text-red-600">
-          { !isBrowserProvider ? "🔴 Browser provider not available. " : "" }
-          { !isJsonRpcSigner ? "🔴 JSON RPC Signer not available. " : "" }
-          { !isUserAddressSet ? "🔴 User address not available. " : "" }
-          { !isReceiverAddressSet ? "🔴 Receiver address not set in props. " : "" }
-          { !isDstChainSet ? `🔴 Destination chain details not available or not supported for ${dstChainName}. ` : "" }
-          { !isSrcTokenAddressSet ? "🔴 Source token not selected. " : "" }
-          { !isAmountValid ? "🔴 Amount must be greater than 0. " : "" }
-          { isUserAddressSet && isChainIdCorrect === false ? // Only show chain mismatch if user address is set (Privy connected)
+          {!isBrowserProvider ? "🔴 Browser provider not available. " : ""}
+          {!isJsonRpcSigner ? "🔴 JSON RPC Signer not available. " : ""}
+          {!isUserAddressSet ? "🔴 User address not available. " : ""}
+          {!isReceiverAddressSet ? "🔴 Receiver address not set in props. " : ""}
+          {!isDstChainSet ? `🔴 Destination chain details not available or not supported for ${dstChainName}. ` : ""}
+          {!isSrcTokenAddressSet ? "🔴 Source token not selected. " : ""}
+          {!isAmountValid ? "🔴 Amount must be greater than 0. " : ""}
+          {isUserAddressSet && isChainIdCorrect === false ? // Only show chain mismatch if user address is set (Privy connected)
             `🔴 Wallet connected to chain ID ${chainId}, but token selected on chain ID ${props.srcChainIdFromTokenSelector} (${SUPPORTED_CHAINS.find(c => c.id === props.srcChainIdFromTokenSelector)?.name || 'Unknown Chain'}). Please switch wallet to ${SUPPORTED_CHAINS.find(c => c.id === props.srcChainIdFromTokenSelector)?.name || `chain ID ${props.srcChainIdFromTokenSelector}`}. ` : ""
           }
-          { !isUserAddressSet && props.srcChainIdFromTokenSelector ? // If Privy not connected but a source chain is selected
+          {!isUserAddressSet && props.srcChainIdFromTokenSelector ? // If Privy not connected but a source chain is selected
             `Please connect Privy on ${SUPPORTED_CHAINS.find(c => c.id === props.srcChainIdFromTokenSelector)?.name || `chain ID ${props.srcChainIdFromTokenSelector}`} to enable swaps.` : ""
           }
         </p>
@@ -389,5 +582,5 @@ export function CrossChainForm(props: CrossChainFormProps) {
 
       <pre className="mt-4 whitespace-pre-wrap text-xs">{statusText}</pre>
     </div>
-  )
+  );
 }
