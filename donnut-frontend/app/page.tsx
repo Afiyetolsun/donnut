@@ -812,7 +812,7 @@ export default function DonnutLanding() {
                   Permanent Messages
                 </h3>
                 <p className="text-sm opacity-75" style={{ color: "#5D4037" }}>
-                  Fan messages stored immutably on Filecoin forever
+                  Fan messages stored immutably on chain forever
                 </p>
               </div>
             </div>
