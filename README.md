@@ -12,6 +12,31 @@ Enter **Donnut** – the delightfully simple way to give and receive crypto dona
 
 ---
 
+## Tech Stack
+
+Donnut is built with modern web technologies and blockchain infrastructure:
+
+- **Frontend**: Next.js 14, TypeScript, Tailwind CSS
+- **Backend**: Next.js API Routes, Neon PostgreSQL
+- **Blockchain**: EVM networks (Ethereum, Arbitrum, Optimism, Polygon)
+- **Key Integrations**: 1inch Fusion+, Blockscout, Privy
+
+  <p align="center">
+    <a href="https://blockscout.com" target="_blank" rel="noopener noreferrer">
+      <img src="donnut-frontend/public/blockscout.svg" alt="Blockscout" width="32" height="32" style="vertical-align:middle;"/>
+    </a>
+    <a href="https://1inch.io" target="_blank" rel="noopener noreferrer">
+      <img src="donnut-frontend/public/1inch.svg" alt="1inch" width="32" height="32" style="vertical-align:middle;"/>
+    </a>
+    <a href="https://www.circle.com/en/usdc" target="_blank" rel="noopener noreferrer">
+      <img src="donnut-frontend/public/usdc.svg" alt="USDC" width="32" height="32" style="vertical-align:middle;"/>
+    </a>
+  </p>
+
+For a detailed breakdown of our technology stack, see [Tech Stack Documentation](docs/tech-stack.md).
+
+---
+
 ## Why is Donnut So Awesome? (Glad you asked!) 😋
 
 Donnut isn't just another platform; it's a whole new flavor of support! We've cooked up something special to solve real problems for fans and creators:
