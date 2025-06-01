@@ -52,8 +52,7 @@ export function WalletButton() {
       const connectedWallet = wallets.find(w => w.address.toLowerCase() === currentWalletAddress.toLowerCase());
       // Get the chain ID in CAIP-2 format (e.g., 'eip155:1' for Ethereum mainnet)
       const chainId = connectedWallet?.chainId || 'eip155:1';
-      const chain = getChainByCaip2Id(chainId);
-      const baseUrl = chain?.blockscoutUrl || 'https://eth.blockscout.com/api/v2';
+      const baseUrl = BLOCKSCOUT_URLS[chainId] || 'https://eth.blockscout.com';
       window.open(`${baseUrl}/address/${currentWalletAddress}`, '_blank');
     }
   };
