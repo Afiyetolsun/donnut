@@ -13,6 +13,8 @@ import {
 import { Wallet, User, Copy, ExternalLink, LogOut } from 'lucide-react';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
+import { useRouter } from 'next/navigation';
+import { getChainByCaip2Id } from '@/lib/chains';
 
 // Blockscout URLs for different networks
 const BLOCKSCOUT_URLS: { [key: string]: string } = {
@@ -32,6 +34,7 @@ export function WalletButton() {
   const { login, logout, authenticated, user } = usePrivy();
   const { wallets } = useWallets();
   const [copyFeedback, setCopyFeedback] = useState(false);
+  const router = useRouter();
 
   const currentWalletAddress = user?.wallet?.address;
 
@@ -49,7 +52,7 @@ export function WalletButton() {
       const connectedWallet = wallets.find(w => w.address.toLowerCase() === currentWalletAddress.toLowerCase());
       // Get the chain ID in CAIP-2 format (e.g., 'eip155:1' for Ethereum mainnet)
       const chainId = connectedWallet?.chainId || 'eip155:1';
-      const baseUrl = BLOCKSCOUT_URLS[chainId] || BLOCKSCOUT_URLS['eip155:1'];
+      const baseUrl = BLOCKSCOUT_URLS[chainId] || 'https://eth.blockscout.com';
       window.open(`${baseUrl}/address/${currentWalletAddress}`, '_blank');
     }
   };
@@ -87,10 +90,10 @@ export function WalletButton() {
       <DropdownMenuContent align="end" className="w-56">
         <DropdownMenuItem 
           className="py-3 cursor-pointer hover:bg-[#A076F9]/10 focus:bg-[#A076F9]/10"
-          onClick={() => {}}
+          onClick={() => router.push('/creator-dashboard')}
         >
           <User className="mr-2 h-4 w-4" />
-          <span>Profile</span>
+          <span>Creator Dashboard</span>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem 
