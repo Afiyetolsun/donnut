@@ -14,10 +14,10 @@ export async function GET(request: Request) {
     let userChain = await getUserMainChain(walletAddress);
     console.log('User chain result:', userChain);
 
-    // If user doesn't exist, create a new entry with Ethereum as default
+    // If user doesn't exist, create a new entry with Arbitrum as default
     if (!userChain) {
       console.log('No existing chain found, creating default entry');
-      userChain = await createOrUpdateUserMainChain(walletAddress, 'ethereum');
+      userChain = await createOrUpdateUserMainChain(walletAddress, 'arbitrum');
       console.log('Created new user chain:', userChain);
     }
 
