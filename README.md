@@ -54,7 +54,7 @@ We believe that by making support simpler and more joyful, we can make a real di
 
 Whether you're a fan eager to share some love, or a creator ready to receive support in the simplest way possible, Donnut is for you.
 
-* **Try the App:** 
+* **Try the App:** https://donnut.vercel.app/
 
 Let's make the internet a sweeter, more supportive place for creators, together!
 
