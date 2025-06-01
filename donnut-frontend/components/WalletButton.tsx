@@ -14,6 +14,7 @@ import { Wallet, User, Copy, ExternalLink, LogOut } from 'lucide-react';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
+import { getChainByCaip2Id } from '@/lib/chains';
 
 // Blockscout URLs for different networks
 const BLOCKSCOUT_URLS: { [key: string]: string } = {
@@ -47,7 +48,8 @@ export function WalletButton() {
       const connectedWallet = wallets.find(w => w.address.toLowerCase() === currentWalletAddress.toLowerCase());
       // Get the chain ID in CAIP-2 format (e.g., 'eip155:1' for Ethereum mainnet)
       const chainId = connectedWallet?.chainId || 'eip155:1';
-      const baseUrl = BLOCKSCOUT_URLS[chainId] || BLOCKSCOUT_URLS['eip155:1'];
+      const chain = getChainByCaip2Id(chainId);
+      const baseUrl = chain?.blockscoutUrl || 'https://eth.blockscout.com/api/v2';
       window.open(`${baseUrl}/address/${currentWalletAddress}`, '_blank');
     }
   };

@@ -11,14 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Coins } from 'lucide-react';
 import { useWallets } from '@privy-io/react-auth';
 import { toast } from 'sonner';
-
-// Hardcoded chains for now
-const CHAINS = [
-  { id: 1, name: 'Ethereum', symbol: 'ETH', logo: '/chains/ethereum.svg', blockscoutUrl: 'https://eth.blockscout.com/api/v2', coingeckoId: 'ethereum' },
-  { id: 137, name: 'Polygon', symbol: 'MATIC', logo: '/chains/polygon.svg', blockscoutUrl: 'https://polygon.blockscout.com/api/v2', coingeckoId: 'matic-network' },
-  { id: 42161, name: 'Arbitrum', symbol: 'ETH', logo: '/chains/arbitrum.svg', blockscoutUrl: 'https://arbitrum.blockscout.com/api/v2', coingeckoId: 'ethereum' },
-  { id: 10, name: 'Optimism', symbol: 'ETH', logo: '/chains/optimism.svg', blockscoutUrl: 'https://optimism.blockscout.com/api/v2', coingeckoId: 'ethereum' },
-];
+import { SUPPORTED_CHAINS, Chain } from '@/lib/chains';
 
 // Cache for token prices
 const priceCache: {
@@ -48,7 +41,7 @@ interface TokenSelectorProps {
 
 export function TokenSelector({ onAmountChange, onTokenChange, onChainChange }: TokenSelectorProps) {
   const { wallets } = useWallets();
-  const [selectedChain, setSelectedChain] = useState(CHAINS[0]);
+  const [selectedChain, setSelectedChain] = useState<Chain>(SUPPORTED_CHAINS[0]);
   const [tokens, setTokens] = useState<Token[]>([]);
   const [selectedToken, setSelectedToken] = useState<Token | null>(null);
   const [amount, setAmount] = useState('');
@@ -56,7 +49,7 @@ export function TokenSelector({ onAmountChange, onTokenChange, onChainChange }: 
   const [isLoading, setIsLoading] = useState(false);
 
   // Function to fetch token prices from CoinGecko with caching
-  const fetchTokenPrices = async (tokens: Token[], chain: typeof CHAINS[0]) => {
+  const fetchTokenPrices = async (tokens: Token[], chain: Chain) => {
     try {
       const now = Date.now();
       let nativePrice = 0;
@@ -172,7 +165,7 @@ export function TokenSelector({ onAmountChange, onTokenChange, onChainChange }: 
     try {
       setIsLoading(true);
       console.log('Fetching balances for address:', address, 'chain:', chainId);
-      const chain = CHAINS.find(c => c.id === chainId);
+      const chain = SUPPORTED_CHAINS.find(c => c.id === chainId);
       if (!chain) {
         console.error('Chain not found:', chainId);
         return;
@@ -282,7 +275,7 @@ export function TokenSelector({ onAmountChange, onTokenChange, onChainChange }: 
       const updateChainState = async (chainId: string) => {
         console.log('Updating chain state:', chainId);
         const numericChainId = parseInt(chainId.split(':')[1]);
-        const chain = CHAINS.find(c => c.id === numericChainId);
+        const chain = SUPPORTED_CHAINS.find(c => c.id === numericChainId);
         if (chain) {
           // Show toast notification if chain has changed
           if (previousChainId && previousChainId !== chainId) {

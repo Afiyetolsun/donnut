@@ -14,13 +14,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { ChevronDown, Info } from 'lucide-react';
-
-const NETWORKS = [
-  { id: 'ethereum', name: 'Ethereum', icon: '/chains/ethereum.svg' },
-  { id: 'optimism', name: 'Optimism', icon: '/chains/optimism.svg' },
-  { id: 'arbitrum', name: 'Arbitrum', icon: '/chains/arbitrum.svg' },
-  { id: 'polygon', name: 'Polygon', icon: '/chains/polygon.svg' },
-];
+import { NETWORK_OPTIONS } from '@/lib/chains';
 
 interface NetworkSelectorProps {
   currentChain: string;
@@ -29,15 +23,15 @@ interface NetworkSelectorProps {
 
 export function NetworkSelector({ currentChain, updateUserChain }: NetworkSelectorProps) {
   const [selectedNetwork, setSelectedNetwork] = useState(
-    NETWORKS.find(n => n.id === currentChain) || NETWORKS[0]
+    NETWORK_OPTIONS.find(n => n.id === currentChain) || NETWORK_OPTIONS[0]
   );
 
   useEffect(() => {
-    const network = NETWORKS.find(n => n.id === currentChain) || NETWORKS[0];
+    const network = NETWORK_OPTIONS.find(n => n.id === currentChain) || NETWORK_OPTIONS[0];
     setSelectedNetwork(network);
   }, [currentChain]);
 
-  const handleNetworkChange = (network: typeof NETWORKS[0]) => {
+  const handleNetworkChange = (network: typeof NETWORK_OPTIONS[0]) => {
     setSelectedNetwork(network);
     updateUserChain(network.id);
   };
@@ -73,7 +67,7 @@ export function NetworkSelector({ currentChain, updateUserChain }: NetworkSelect
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
-          {NETWORKS.map((network) => (
+          {NETWORK_OPTIONS.map((network) => (
             <DropdownMenuItem
               key={network.id}
               onClick={() => handleNetworkChange(network)}
