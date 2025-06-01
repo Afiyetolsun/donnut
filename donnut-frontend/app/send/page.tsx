@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { AlertCircle, CheckCircle2 } from "lucide-react";
+import { AlertCircle, CheckCircle2, ChevronRight } from "lucide-react";
 
 export default function SendDonutPage() {
   const router = useRouter();
@@ -54,10 +54,10 @@ export default function SendDonutPage() {
         <div className="w-full max-w-md space-y-8">
           <div className="text-center">
             <h1 className="text-3xl font-bold tracking-tight" style={{ color: "#5D4037" }}>
-              Send Donut Now
+              Send Donnut Now 🍩
             </h1>
             <p className="mt-2 text-sm" style={{ color: "#5D4037" }}>
-              Enter the donut link to proceed with your donation
+              Enter the donut link to verify and proceed with your donation
             </p>
           </div>
 
@@ -95,6 +95,7 @@ export default function SendDonutPage() {
               disabled={isLoading || isSuccess}
             >
               {isLoading ? 'Checking...' : isSuccess ? 'Found!' : 'Continue'}
+              <ChevronRight className="ml-2 h-5 w-5" />
             </Button>
           </form>
         </div>

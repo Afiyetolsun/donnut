@@ -3,7 +3,7 @@
 import { usePrivy } from '@privy-io/react-auth';
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Plus, ChevronRight, ChevronDown, ChevronUp, Search, Copy, Check, TrendingUp, Gift, Star } from 'lucide-react';
+import { Plus, ChevronRight, ChevronDown, ChevronUp, Search, Copy, Check, TrendingUp, Gift, Star, Mail } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { PaymentLink } from '@/lib/db';
 import { Header } from '@/components/header';
@@ -20,6 +20,8 @@ interface Donation {
   id: string;
   transaction_hash: string;
   created_at: string;
+  read: boolean;
+  message?: string;
 }
 
 interface PaymentLinkWithDonations extends PaymentLink {
@@ -217,16 +219,16 @@ export default function CreatorDashboardPage() {
             <Card className="border-0 shadow-lg rounded-3xl bg-white bg-opacity-80 backdrop-blur-sm hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2" style={{ color: "#5D4037" }}>
-                  <Star className="h-5 w-5" style={{ color: "#FFCAD4" }} />
-                  Average Per Link
+                  <Mail className="h-5 w-5" style={{ color: "#FFCAD4" }} />
+                  Message Inbox
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="flex items-baseline">
                   <p className="text-4xl font-bold" style={{ color: "#FFCAD4" }}>
-                    {paymentLinks.length ? (totalDonations / paymentLinks.length).toFixed(1) : '0'}
+                    {paymentLinks.reduce((sum, link) => sum + (link.donations?.filter(d => !d.read).length || 0), 0)}
                   </p>
-                  <p className="ml-2 text-sm text-gray-500">donations/link</p>
+                  <p className="ml-2 text-sm text-gray-500">unread messages</p>
                 </div>
               </CardContent>
             </Card>
