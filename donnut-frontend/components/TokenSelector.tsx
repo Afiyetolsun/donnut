@@ -103,7 +103,7 @@ export function TokenSelector({ onAmountChange, onTokenChange, onChainChange }: 
                 address: token.token.address,
                 symbol: token.token.symbol,
                 name: token.token.name,
-                decimals: token.token.decimals,
+                decimals: parseInt(String(token.token.decimals), 10),
                 balance: balance.toFixed(6)
               });
             }
