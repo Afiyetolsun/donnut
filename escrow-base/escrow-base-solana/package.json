@@ -1,0 +1,38 @@
+{
+  "name": "fusion-escrow-solana-project",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "lint:fix": "prettier */*.js \"*/**/*{.js,.ts}\" -w",
+    "lint": "prettier */*.js \"*/**/*{.js,.ts}\" --check",
+    "clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist",
+    "build": "anchor build",
+    "test": "anchor test",
+    "deploy": "anchor deploy",
+    "localnet:up": "solana-test-validator --reset --quiet",
+    "localnet:logs": "solana logs -u localhost Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS"
+  },
+  "dependencies": {
+    "@coral-xyz/anchor": "^0.31.1",
+    "@solana/spl-token": "^0.4.8",
+    "@solana/web3.js": "^1.95.1",
+    "bn.js": "^5.2.1"
+  },
+  "devDependencies": {
+    "@types/bn.js": "^5.1.5",
+    "@types/chai": "^4.3.19",
+    "@types/mocha": "^10.0.7",
+    "chai": "^4.5.0",
+    "mocha": "^10.8.2",
+    "prettier": "^3.3.3",
+    "ts-mocha": "^10.0.0",
+    "typescript": "^5.5.4"
+  },
+  "prettier": {
+    "printWidth": 120,
+    "semi": true,
+    "singleQuote": true,
+    "tabWidth": 2,
+    "trailingComma": "es5"
+  }
+}
