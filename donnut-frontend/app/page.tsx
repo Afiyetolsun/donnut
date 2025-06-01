@@ -19,6 +19,7 @@ import {
   Eye,
   ChevronRight,
   Menu,
+  DollarSign,
 } from "lucide-react"
 import Link from "next/link"
 import { Header } from "@/components/header"
@@ -281,29 +282,47 @@ export default function DonnutLanding() {
           variants={staggerContainer}
         >
           <motion.div 
-            className="flex justify-center items-center mb-6"
+            className="flex justify-center items-center mb-4"
             variants={fadeInUp}
           >
             <span className="text-lg font-medium bg-gradient-to-r from-[#A076F9] to-[#40C5E0] bg-clip-text text-transparent">
-              Sprinkle Some Magic into Web3 Creativity ✨
+              Cross-Chain Donations Made Simple ✨
             </span>
           </motion.div>
 
           <motion.h1 
-            className="text-5xl md:text-6xl font-bold mb-6 leading-tight"
+            className="text-5xl md:text-6xl font-bold mb-3 leading-tight"
             variants={fadeInUp}
             style={{ color: "#5D4037" }}
           >
-            The Sweetest Way to Support Creativity in <span style={{ color: "#A076F9" }}>Web3</span>
+            Support Creators with <br /> <span style={{ color: "#A076F9" }}>Any Crypto</span>
           </motion.h1>
 
           <motion.p 
-            className="text-xl mb-8 max-w-2xl mx-auto leading-relaxed"
+            className="text-xl mb-4 max-w-2xl mx-auto leading-relaxed"
             variants={fadeInUp}
             style={{ color: "#5D4037" }}
           >
-            Fans donate seamlessly from any blockchain. Creators receive USDC on Flow. Sweet and simple.
+            Donate with any crypto on the chain. Creators receive USDC on their preferred chain. Powered by 1inch Fusion+ for the best rates.
           </motion.p>
+
+          <motion.p 
+            className="text-sm mb-8 max-w-2xl mx-auto leading-relaxed opacity-60"
+            variants={fadeInUp}
+            style={{ color: "#5D4037" }}
+          >
+            Currently supporting:
+          </motion.p>
+
+          <motion.div 
+            className="flex justify-center items-center gap-4 mb-12"
+            variants={fadeInUp}
+          >
+            <img src="/chains/ethereum.svg" alt="Ethereum" className="w-8 h-8 opacity-80 hover:opacity-100 transition-opacity" />
+            <img src="/chains/arbitrum.svg" alt="Arbitrum" className="w-8 h-8 opacity-80 hover:opacity-100 transition-opacity" />
+            <img src="/chains/optimism.svg" alt="Optimism" className="w-8 h-8 opacity-80 hover:opacity-100 transition-opacity" />
+            <img src="/chains/polygon.svg" alt="Polygon" className="w-8 h-8 opacity-80 hover:opacity-100 transition-opacity" />
+          </motion.div>
 
           <motion.div 
             className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12"
@@ -344,26 +363,26 @@ export default function DonnutLanding() {
             className="relative max-w-3xl mx-auto"
             variants={fadeInUp}
           >
-            <div className="bg-white bg-opacity-60 backdrop-blur-sm rounded-3xl p-8 shadow-xl hover:shadow-2xl transition-shadow duration-300">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="bg-white bg-opacity-60 backdrop-blur-sm rounded-3xl p-6 shadow-xl hover:shadow-2xl transition-shadow duration-300">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {[
                   {
-                    icon: Coins,
+                    icon: "blockscout",
                     color: "#40C5E0",
-                    title: "Any Crypto",
-                    description: "From any blockchain"
+                    title: "All Tokens",
+                    description: "We discover all available tokens through Blockscout on a given chain."
                   },
                   {
-                    icon: ArrowRightLeft,
+                    icon: "1inch",
                     color: "#A076F9",
-                    title: "1inch Cross-chain Swap",
-                    description: "Seamless Bridging: Fast, secure cross-chain swaps using escrow functionality."
+                    title: "1inch Fusion+",
+                    description: "Seamless cross-chain swaps with optimal rates"
                   },
                   {
-                    icon: Gift,
+                    icon: "usdc",
                     color: "#FFCAD4",
                     title: "USDC Delivery",
-                    description: "Direct to creators"
+                    description: "Direct to creators on their preferred chain"
                   }
                 ].map((item, index) => (
                   <motion.div
@@ -374,14 +393,26 @@ export default function DonnutLanding() {
                     transition={{ delay: index * 0.2 }}
                   >
                     <motion.div
-                      whileHover={{ scale: 1.1, rotate: 360 }}
-                      transition={{ duration: 0.5 }}
-                      className="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center"
-                      style={{ backgroundColor: item.color }}
+                      whileHover={{ scale: 1.1 }}
+                      transition={{ duration: 0.3 }}
+                      className="w-20 h-20 mx-auto mb-4 rounded-2xl flex items-center justify-center bg-white shadow-lg hover:shadow-xl transition-all duration-300"
                     >
-                      <item.icon className="w-8 h-8 text-white" />
+                      <a 
+                        href={item.icon === "blockscout" ? "https://www.blockscout.com/" : 
+                             item.icon === "1inch" ? "https://1inch.io/fusion/" : 
+                             "https://www.circle.com/usdc"}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="w-full h-full flex items-center justify-center"
+                      >
+                        <img 
+                          src={`/${item.icon}.svg`} 
+                          alt={item.title} 
+                          className="w-10 h-10"
+                        />
+                      </a>
                     </motion.div>
-                    <h3 className="font-semibold mb-2" style={{ color: "#5D4037" }}>
+                    <h3 className="font-semibold mb-1 text-base" style={{ color: "#5D4037" }}>
                       {item.title}
                     </h3>
                     <p className="text-sm opacity-75" style={{ color: "#5D4037" }}>
@@ -409,35 +440,35 @@ export default function DonnutLanding() {
             variants={fadeInUp}
           >
             <h2 className="text-4xl font-bold mb-4" style={{ color: "#5D4037" }}>
-              Your Donnut, Made Fresh in 3 Simple Steps
+              How Donnut Works
             </h2>
             <p className="text-xl opacity-75" style={{ color: "#5D4037" }}>
-              The magic behind every sweet donation
+              Simple, secure, and efficient cross-chain donations
             </p>
           </motion.div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {[
               {
-                icon: Coins,
+                icon: FileText,
                 color: "#40C5E0",
                 step: "Step 1",
-                title: "Pick Your Crypto & Message",
-                description: "Fans choose any token, any chain, and add a personal touch to their donation."
+                title: "Creator Generates Link",
+                description: "Creators can create multiple labeled donation links for different purposes or campaigns. Each link is easily shareable and trackable."
               },
               {
-                icon: ArrowRightLeft,
+                icon: Coins,
                 color: "#A076F9",
                 step: "Step 2",
-                title: "1inch Cross-chain Swap",
-                description: "We instantly convert to USDC and bridge to Flow using 1inch Cross-chain Swap (Fusion+)."
+                title: "Select & Donate",
+                description: "Supporters follow the link, choose their preferred token and chain, and send their donation. We discover all available tokens through Blockscout."
               },
               {
-                icon: Gift,
+                icon: DollarSign,
                 color: "#FFCAD4",
                 step: "Step 3",
-                title: "Sweet Delivery",
-                description: "Creators get USDC directly on Flow, hassle-free and ready to use."
+                title: "Automatic Delivery & Analytics",
+                description: "The donation is automatically converted to USDC and delivered to the creator's preferred chain."
               }
             ].map((item, index) => (
               <motion.div
@@ -486,29 +517,30 @@ export default function DonnutLanding() {
             <motion.div 
               id="for-fans"
               variants={fadeInUp}
+              className="bg-white bg-opacity-60 backdrop-blur-sm rounded-3xl p-8 shadow-xl hover:shadow-2xl transition-all duration-300"
             >
               <h2 className="text-3xl font-bold mb-8" style={{ color: "#5D4037" }}>
-                A Treat for Fans Too! 🎉
+                For Supporters 🎁
               </h2>
               <div className="space-y-6">
                 {[
                   {
                     icon: Coins,
                     color: "#40C5E0",
-                    title: "Donate with Any Crypto",
-                    description: "Use Bitcoin, Ethereum, or any token from any blockchain"
+                    title: "Any Token, Any Chain",
+                    description: "Donate with any cryptocurrency from our supported chains. We continuously work on extending chain support."
                   },
                   {
                     icon: Mail,
                     color: "#FFCAD4",
-                    title: "Email Verification",
-                    description: "Easy Web2 Onboarding: Simple email verification."
+                    title: "Simple Verification",
+                    description: "No login required. Just connect your wallet and verify the payment link on our website."
                   },
                   {
                     icon: Heart,
                     color: "#A076F9",
-                    title: "Personalize Your Support",
-                    description: "Add messages that last forever on Filecoin"
+                    title: "Personal Touch",
+                    description: "Add a personal message to your donation to show your support and appreciation."
                   }
                 ].map((item, index) => (
                   <motion.div
@@ -566,25 +598,19 @@ export default function DonnutLanding() {
                     icon: Shield,
                     color: "#40C5E0",
                     title: "Secure & Non-Custodial",
-                    description: "Your funds, your control. Direct deposits to your Flow wallet."
+                    description: "Your funds, your control. Direct deposits to your wallet on your preferred chain."
                   },
                   {
                     icon: Zap,
                     color: "#A076F9",
-                    title: "Lightning Fast",
-                    description: "Instant cross-chain swaps and settlements."
+                    title: "Optimal Rates",
+                    description: "Get the best conversion rates with 1inch Fusion+ and minimal fees."
                   },
                   {
                     icon: Globe,
                     color: "#FFCAD4",
-                    title: "Global Reach",
-                    description: "Accept support from fans worldwide, any token, any chain."
-                  },
-                  {
-                    icon: FileText,
-                    color: "#40C5E0",
-                    title: "Smart Analytics",
-                    description: "Track donations and engagement in real-time."
+                    title: "Global Support",
+                    description: "Accept donations from fans worldwide using any token on our supported chains."
                   }
                 ].map((item, index) => (
                   <motion.div
@@ -637,10 +663,10 @@ export default function DonnutLanding() {
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold mb-4" style={{ color: "#5D4037" }}>
-              Baked with the Best Web3 Ingredients
+              Built with Web3's Best
             </h2>
             <p className="text-xl opacity-75" style={{ color: "#5D4037" }}>
-              Powered by leading technology for the sweetest experience
+              Powered by leading technology for seamless cross-chain donations
             </p>
           </div>
 
@@ -657,7 +683,7 @@ export default function DonnutLanding() {
                   1inch Fusion+
                 </h3>
                 <p className="text-sm opacity-75" style={{ color: "#5D4037" }}>
-                  Optimal Conversions: Get the best rates, less fees.
+                  Seamless cross-chain swaps with optimal rates and minimal fees.
                 </p>
               </CardContent>
             </Card>
@@ -671,61 +697,10 @@ export default function DonnutLanding() {
                   <ArrowRightLeft className="w-6 h-6 text-white" />
                 </div>
                 <h3 className="font-bold mb-2" style={{ color: "#5D4037" }}>
-                  1inch Cross-chain Swap
+                  EVM Networks
                 </h3>
                 <p className="text-sm opacity-75" style={{ color: "#5D4037" }}>
-                  Seamless Bridging: Fast, secure cross-chain swaps using escrow functionality.
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card className="border-0 shadow-lg rounded-3xl bg-white bg-opacity-80 backdrop-blur-sm hover:shadow-xl transition-all">
-              <CardContent className="p-6">
-                <div
-                  className="w-12 h-12 mb-4 rounded-full flex items-center justify-center"
-                  style={{ backgroundColor: "#FFCAD4" }}
-                >
-                  <Mail className="w-6 h-6 text-white" />
-                </div>
-                <h3 className="font-bold mb-2" style={{ color: "#5D4037" }}>
-                  Email Verification
-                </h3>
-                <p className="text-sm opacity-75" style={{ color: "#5D4037" }}>
-                  Easy Web2 Onboarding: Simple email verification.
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card className="border-0 shadow-lg rounded-3xl bg-white bg-opacity-80 backdrop-blur-sm hover:shadow-xl transition-all">
-              <CardContent className="p-6">
-                <div
-                  className="w-12 h-12 mb-4 rounded-full flex items-center justify-center"
-                  style={{ backgroundColor: "#40C5E0" }}
-                >
-                  <FileText className="w-6 h-6 text-white" />
-                </div>
-                <h3 className="font-bold mb-2" style={{ color: "#5D4037" }}>
-                  Filecoin
-                </h3>
-                <p className="text-sm opacity-75" style={{ color: "#5D4037" }}>
-                  Messages That Last: Your kind words, stored forever.
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card className="border-0 shadow-lg rounded-3xl bg-white bg-opacity-80 backdrop-blur-sm hover:shadow-xl transition-all">
-              <CardContent className="p-6">
-                <div
-                  className="w-12 h-12 mb-4 rounded-full flex items-center justify-center"
-                  style={{ backgroundColor: "#A076F9" }}
-                >
-                  <Star className="w-6 h-6 text-white" />
-                </div>
-                <h3 className="font-bold mb-2" style={{ color: "#5D4037" }}>
-                  Pyth Entropy
-                </h3>
-                <p className="text-sm opacity-75" style={{ color: "#5D4037" }}>
-                  Lucky Donnuts: Random NFT bonuses for fans!
+                  Support for major EVM chains with continuous expansion.
                 </p>
               </CardContent>
             </Card>
@@ -742,7 +717,58 @@ export default function DonnutLanding() {
                   Blockscout
                 </h3>
                 <p className="text-sm opacity-75" style={{ color: "#5D4037" }}>
-                  Total Transparency: See every transaction, live.
+                  Real-time chain data and token discovery with spam filtering.
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="border-0 shadow-lg rounded-3xl bg-white bg-opacity-80 backdrop-blur-sm hover:shadow-xl transition-all">
+              <CardContent className="p-6">
+                <div
+                  className="w-12 h-12 mb-4 rounded-full flex items-center justify-center"
+                  style={{ backgroundColor: "#40C5E0" }}
+                >
+                  <Globe className="w-6 h-6 text-white" />
+                </div>
+                <h3 className="font-bold mb-2" style={{ color: "#5D4037" }}>
+                  Cross-chain Support
+                </h3>
+                <p className="text-sm opacity-75" style={{ color: "#5D4037" }}>
+                  Seamless donations across different EVM networks.
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="border-0 shadow-lg rounded-3xl bg-white bg-opacity-80 backdrop-blur-sm hover:shadow-xl transition-all">
+              <CardContent className="p-6">
+                <div
+                  className="w-12 h-12 mb-4 rounded-full flex items-center justify-center"
+                  style={{ backgroundColor: "#A076F9" }}
+                >
+                  <FileText className="w-6 h-6 text-white" />
+                </div>
+                <h3 className="font-bold mb-2" style={{ color: "#5D4037" }}>
+                  Multiple Links
+                </h3>
+                <p className="text-sm opacity-75" style={{ color: "#5D4037" }}>
+                  Create and manage multiple labeled donation links for different purposes.
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="border-0 shadow-lg rounded-3xl bg-white bg-opacity-80 backdrop-blur-sm hover:shadow-xl transition-all">
+              <CardContent className="p-6">
+                <div
+                  className="w-12 h-12 mb-4 rounded-full flex items-center justify-center"
+                  style={{ backgroundColor: "#FFCAD4" }}
+                >
+                  <Star className="w-6 h-6 text-white" />
+                </div>
+                <h3 className="font-bold mb-2" style={{ color: "#5D4037" }}>
+                  Creator Dashboard
+                </h3>
+                <p className="text-sm opacity-75" style={{ color: "#5D4037" }}>
+                  Track all donations and transactions with detailed analytics.
                 </p>
               </CardContent>
             </Card>
@@ -754,10 +780,10 @@ export default function DonnutLanding() {
       <section id="transparency" className="py-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-4xl font-bold mb-6" style={{ color: "#5D4037" }}>
-            Our Recipe for Trust
+            Complete Transparency
           </h2>
           <p className="text-xl mb-8 opacity-75" style={{ color: "#5D4037" }}>
-            Clearly crafted, openly shared. Every transaction is visible and every message is permanent.
+            Every transaction is tracked and verified through Blockscout. Trust is built on transparency.
           </p>
           <div className="bg-white bg-opacity-60 backdrop-blur-sm rounded-3xl p-8 shadow-xl">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -772,7 +798,7 @@ export default function DonnutLanding() {
                   Transaction Transparency
                 </h3>
                 <p className="text-sm opacity-75" style={{ color: "#5D4037" }}>
-                  Every donation tracked on Blockscout for complete visibility
+                  Every donation tracked and verified through Blockscout
                 </p>
               </div>
               <div className="text-center">
@@ -786,7 +812,7 @@ export default function DonnutLanding() {
                   Permanent Messages
                 </h3>
                 <p className="text-sm opacity-75" style={{ color: "#5D4037" }}>
-                  Fan messages stored immutably on Filecoin forever
+                  Fan messages stored immutably on chain forever
                 </p>
               </div>
             </div>
@@ -798,10 +824,10 @@ export default function DonnutLanding() {
       <section className="py-20 px-4 sm:px-6 lg:px-8 bg-white bg-opacity-50">
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-4xl font-bold mb-6" style={{ color: "#5D4037" }}>
-            Ready to Share Some Sweetness?
+            Ready to Support Creators?
           </h2>
           <p className="text-xl mb-8 opacity-75" style={{ color: "#5D4037" }}>
-            Join the donnut revolution and start supporting your favorite creators today!
+            Join Donnut and make cross-chain donations simple and efficient!
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">

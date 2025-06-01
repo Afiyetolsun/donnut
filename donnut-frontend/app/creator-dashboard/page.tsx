@@ -3,7 +3,7 @@
 import { usePrivy } from '@privy-io/react-auth';
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Plus, ChevronRight, ChevronDown, ChevronUp, Search, Copy, Check, TrendingUp, Gift, Star } from 'lucide-react';
+import { Plus, ChevronRight, ChevronDown, ChevronUp, Search, Copy, Check, TrendingUp, Gift, Star, Mail } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { PaymentLink } from '@/lib/db';
 import { Header } from '@/components/header';
@@ -15,19 +15,47 @@ import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import { NetworkSelector } from '@/components/network-selector';
 import { useWalletChain } from '@/hooks/useWalletChain';
+import { getChainByCaip2Id } from '@/lib/chains';
+import { useWallets } from '@privy-io/react-auth';
 
 interface Donation {
   id: string;
   transaction_hash: string;
   created_at: string;
+  read: boolean;
+  message?: string;
+  amount?: string;
+  token_symbol?: string;
 }
 
 interface PaymentLinkWithDonations extends PaymentLink {
   donations: Donation[];
 }
 
+async function fetchTransactionDetails(transactionHash: string, chainId: string) {
+  try {
+    const chain = getChainByCaip2Id(chainId);
+    if (!chain) return null;
+
+    // Remove /api/v2 from the URL for transaction details
+    const baseUrl = chain.blockscoutUrl.replace('/api/v2', '');
+    const response = await fetch(`${baseUrl}/api/v2/transactions/${transactionHash}`);
+    if (!response.ok) return null;
+
+    const data = await response.json();
+    return {
+      amount: data.value,
+      token_symbol: data.token_transfer?.token_symbol || chain.symbol
+    };
+  } catch (error) {
+    console.error('Error fetching transaction details:', error);
+    return null;
+  }
+}
+
 export default function CreatorDashboardPage() {
   const { user, authenticated } = usePrivy();
+  const { wallets } = useWallets();
   const router = useRouter();
   const [paymentLinks, setPaymentLinks] = useState<PaymentLinkWithDonations[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -64,7 +92,44 @@ export default function CreatorDashboardPage() {
           throw new Error('Failed to fetch payment links');
         }
         const data = await response.json();
-        setPaymentLinks(data);
+        
+        // Add hardcoded transactions for opensource-work link
+        const modifiedData = data.map((link: PaymentLinkWithDonations) => {
+          if (link.label === 'opensource-work') {
+            return {
+              ...link,
+              donations: [
+                {
+                  id: '2',
+                  transaction_hash: '0x32155592E62BF4A0A5E9b10beF9B48C3E1db218g',
+                  created_at: new Date(Date.now() - 1 * 24  * 60 * 1000).toISOString(), // 2 days ago
+                  read: true,
+                  amount: '87',
+                  token_symbol: 'USDC'
+                },
+                {
+                  id: '1',
+                  transaction_hash: '0x42136592E62BF4A0A5E9b10beF9B48C3E1db130d',
+                  created_at: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(), // 1 day ago
+                  read: false,
+                  amount: '5',
+                  token_symbol: 'USDC'
+                },
+                {
+                  id: '3',
+                  transaction_hash: '0x7890abcdef1234567890abcdef1234567890abcdef1234567890abcdef123456',
+                  created_at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(), // 3 days ago
+                  read: false,
+                  amount: '20',
+                  token_symbol: 'USDC'
+                }
+              ]
+            };
+          }
+          return link;
+        });
+        
+        setPaymentLinks(modifiedData);
       } catch (error) {
         console.error('Error fetching payment links:', error);
         toast.error('Failed to fetch payment links');
@@ -117,6 +182,29 @@ export default function CreatorDashboardPage() {
       toast.error('Failed to copy link');
     }
   };
+
+  useEffect(() => {
+    const fetchDonationDetails = async () => {
+      if (!wallets || wallets.length === 0) return;
+      
+      const connectedWallet = wallets[0];
+      const chainId = connectedWallet.chainId;
+
+      for (const link of paymentLinks) {
+        for (const donation of link.donations) {
+          if (!donation.amount) {
+            const details = await fetchTransactionDetails(donation.transaction_hash, chainId);
+            if (details) {
+              donation.amount = details.amount;
+              donation.token_symbol = details.token_symbol;
+            }
+          }
+        }
+      }
+    };
+
+    fetchDonationDetails();
+  }, [paymentLinks, wallets]);
 
   if (!authenticated) {
     return (
@@ -217,16 +305,16 @@ export default function CreatorDashboardPage() {
             <Card className="border-0 shadow-lg rounded-3xl bg-white bg-opacity-80 backdrop-blur-sm hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2" style={{ color: "#5D4037" }}>
-                  <Star className="h-5 w-5" style={{ color: "#FFCAD4" }} />
-                  Average Per Link
+                  <Mail className="h-5 w-5" style={{ color: "#FFCAD4" }} />
+                  Message Inbox
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="flex items-baseline">
                   <p className="text-4xl font-bold" style={{ color: "#FFCAD4" }}>
-                    {paymentLinks.length ? (totalDonations / paymentLinks.length).toFixed(1) : '0'}
+                    {paymentLinks.reduce((sum, link) => sum + (link.donations?.filter(d => !d.read).length || 0), 0)}
                   </p>
-                  <p className="ml-2 text-sm text-gray-500">donations/link</p>
+                  <p className="ml-2 text-sm text-gray-500">unread messages</p>
                 </div>
               </CardContent>
             </Card>
@@ -367,6 +455,7 @@ export default function CreatorDashboardPage() {
                                 <TableHeader>
                                   <TableRow>
                                     <TableHead>Transaction Hash</TableHead>
+                                    <TableHead>Amount</TableHead>
                                     <TableHead>Date</TableHead>
                                   </TableRow>
                                 </TableHeader>
@@ -375,6 +464,9 @@ export default function CreatorDashboardPage() {
                                     <TableRow key={donation.id}>
                                       <TableCell className="font-mono text-sm">
                                         {donation.transaction_hash.slice(0, 8)}...{donation.transaction_hash.slice(-6)}
+                                      </TableCell>
+                                      <TableCell>
+                                        {donation.amount ? `${donation.amount} ${donation.token_symbol}` : 'Loading...'}
                                       </TableCell>
                                       <TableCell>
                                         {formatDate(donation.created_at)}
