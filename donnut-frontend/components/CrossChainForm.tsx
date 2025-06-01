@@ -2,18 +2,16 @@
 
 'use client'
 
-import React, { useState, useEffect } from 'react'
 import {
   BrowserProvider,
-  JsonRpcSigner,
   Contract,
-  hexlify,
-  randomBytes,
-  parseUnits,
+  JsonRpcSigner,
+  parseUnits
 } from 'ethers'
+import { useEffect, useState } from 'react'
 import { useEthersPrivy } from '../hooks/useEthersPrivy'
+import { Chain, SUPPORTED_CHAINS, getChainByName } from '../lib/chains'
 import { Button } from './ui/button'
-import { SUPPORTED_CHAINS, getChainByName, Chain } from '../lib/chains'
 
 // Define types that were previously imported from @1inch/cross-chain-sdk
 // These will be used for API request/response types
@@ -63,9 +61,6 @@ export function CrossChainForm(props: CrossChainFormProps) {
   const [dstChain, setDstChain] = useState<Chain | null>(null)
   const [dstTokenAddress, setDstTokenAddress] = useState<string>('')
   const [dstChainName, setDstChainName] = useState<string>('')
-
-
-  const AUTH_KEY = process.env.NEXT_PUBLIC_1INCH_AUTH_KEY || ''
 
   useEffect(() => {
     async function fetchUserMainChain() {
