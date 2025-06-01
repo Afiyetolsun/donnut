@@ -99,9 +99,19 @@ export function TokenSelector({ onAmountChange, onTokenChange, onChainChange }: 
 
         if (uncachedAddresses.length > 0) {
           try {
+            // Map chain IDs to CoinGecko network IDs
+            const networkMap: { [key: number]: string } = {
+              1: 'ethereum',
+              137: 'polygon-pos',
+              42161: 'arbitrum-one',
+              10: 'optimistic-ethereum'
+            };
+
+            const networkId = networkMap[chain.id] || 'ethereum';
             const tokenPricesResponse = await fetch(
-              `https://api.coingecko.com/api/v3/simple/token_price/ethereum?contract_addresses=${uncachedAddresses.join(',')}&vs_currencies=usd`
+              `https://api.coingecko.com/api/v3/simple/token_price/${networkId}?contract_addresses=${uncachedAddresses.join(',')}&vs_currencies=usd`
             );
+            
             if (!tokenPricesResponse.ok) {
               throw new Error('Failed to fetch token prices');
             }
@@ -116,6 +126,25 @@ export function TokenSelector({ onAmountChange, onTokenChange, onChainChange }: 
             });
           } catch (error) {
             console.error('Error fetching ERC20 token prices:', error);
+            // If price fetch fails for a specific network, try Ethereum as fallback
+            if (chain.id !== 1) {
+              try {
+                const fallbackResponse = await fetch(
+                  `https://api.coingecko.com/api/v3/simple/token_price/ethereum?contract_addresses=${uncachedAddresses.join(',')}&vs_currencies=usd`
+                );
+                if (fallbackResponse.ok) {
+                  const fallbackPrices = await fallbackResponse.json();
+                  Object.entries(fallbackPrices).forEach(([addr, data]) => {
+                    priceCache.tokens[addr] = {
+                      price: (data as { usd: number }).usd,
+                      timestamp: now
+                    };
+                  });
+                }
+              } catch (fallbackError) {
+                console.error('Error fetching fallback token prices:', fallbackError);
+              }
+            }
           }
         }
 
