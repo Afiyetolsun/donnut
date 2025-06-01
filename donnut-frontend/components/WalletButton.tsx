@@ -19,11 +19,15 @@ import { getChainByCaip2Id } from '@/lib/chains';
 // Blockscout URLs for different networks
 const BLOCKSCOUT_URLS: { [key: string]: string } = {
   'eip155:1': 'https://eth.blockscout.com',
-  'eip155:42161': 'https://blockscout.com/arbitrum/mainnet',
+  'eip155:42161': 'https://arbitrum.blockscout.com/',
+  'eip155:8453': 'https://base.blockscout.com',
+  'eip155:56': 'https://bscscan.com/',
+  'eip155:43114': 'https://subnets.avax.network/',
   'eip155:10': 'https://optimism.blockscout.com',
   'eip155:137': 'https://polygon.blockscout.com',
-  'eip155:56': 'https://bscscan.com', // BSC uses BSCScan
-  'eip155:43114': 'https://snowtrace.io', // Avalanche uses Snowtrace
+  'eip155:5000': 'https://explorer.mantle.xyz',
+  'eip155:130': 'https://unichain.blockscout.com/',
+  'eip155:534352': 'https://scroll.blockscout.com',
 };
 
 export function WalletButton() {

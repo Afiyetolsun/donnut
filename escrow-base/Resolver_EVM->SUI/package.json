@@ -1,0 +1,31 @@
+{
+  "name": "escrow-resolver-demo",
+  "version": "1.0.0",
+  "description": "Happy path demo for EVM-SUI escrow bridge",
+  "main": "happyPathDemo.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "pnpm exec ts-node happyPathDemo.ts",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "evm",
+    "sui",
+    "escrow",
+    "bridge",
+    "resolver"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@mysten/sui": "^1.30.2",
+    "ethers": "^6.11.1",
+    "dotenv": "^16.4.5"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.20",
+    "@types/dotenv": "^8.2.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3"
+  }
+}
