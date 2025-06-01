@@ -6,7 +6,7 @@ export async function GET(
   { params }: { params: { linkId: string } }
 ) {
   try {
-    const { linkId } = params;
+    const linkId = params.linkId; // Directly access the property
     if (!linkId) {
       return NextResponse.json(
         { error: 'Link ID is required' },
@@ -34,4 +34,4 @@ export async function GET(
       { status: 500 }
     );
   }
-} 
+}
