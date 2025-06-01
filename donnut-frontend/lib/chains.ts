@@ -6,6 +6,7 @@ export interface Chain {
   blockscoutUrl: string;
   coingeckoId: string;
   caip2Id: string; // Chain ID in CAIP-2 format (e.g., 'eip155:1')
+  usdcAddress: string; // USDC token contract address
 }
 
 export const SUPPORTED_CHAINS: Chain[] = [
@@ -16,7 +17,8 @@ export const SUPPORTED_CHAINS: Chain[] = [
     logo: '/chains/ethereum.svg',
     blockscoutUrl: 'https://eth.blockscout.com/api/v2',
     coingeckoId: 'ethereum',
-    caip2Id: 'eip155:1'
+    caip2Id: 'eip155:1',
+    usdcAddress: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48'
   },
   {
     id: 137,
@@ -25,7 +27,8 @@ export const SUPPORTED_CHAINS: Chain[] = [
     logo: '/chains/polygon.svg',
     blockscoutUrl: 'https://polygon.blockscout.com/api/v2',
     coingeckoId: 'matic-network',
-    caip2Id: 'eip155:137'
+    caip2Id: 'eip155:137',
+    usdcAddress: '0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359'
   },
   {
     id: 42161,
@@ -34,7 +37,8 @@ export const SUPPORTED_CHAINS: Chain[] = [
     logo: '/chains/arbitrum.svg',
     blockscoutUrl: 'https://arbitrum.blockscout.com/api/v2',
     coingeckoId: 'ethereum',
-    caip2Id: 'eip155:42161'
+    caip2Id: 'eip155:42161',
+    usdcAddress: '0xaf88d065e77c8cC2239327C5EDb3A432268e5831'
   },
   {
     id: 10,
@@ -43,7 +47,8 @@ export const SUPPORTED_CHAINS: Chain[] = [
     logo: '/chains/optimism.svg',
     blockscoutUrl: 'https://optimism.blockscout.com/api/v2',
     coingeckoId: 'ethereum',
-    caip2Id: 'eip155:10'
+    caip2Id: 'eip155:10',
+    usdcAddress: '0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85'
   }
 ];
 
