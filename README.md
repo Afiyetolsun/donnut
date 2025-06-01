@@ -75,6 +75,27 @@ We believe that by making support simpler and more joyful, we can make a real di
 
 ---
 
+## Roadmap 🗺️ (Coming Soon!)
+
+Get ready for even more sweetness! Here's what's baking in our kitchen:
+
+* **Support More Chains (Expanding Our Recipe Book!):**
+    We're cooking up support for more EVM chains to give you even more options for sending and receiving donations. More chains mean more flexibility and lower fees for everyone!
+
+* **Support Non-EVM Blockchains (New Flavors in the Mix!):**
+    Why stop at EVM? We're excited to bring the Donnut experience to other blockchain ecosystems. This means more options, more users, and more opportunities for creators worldwide!
+
+* **Win the "Golden Sprinkle"! (Random NFT Bonuses!):**
+    Who doesn't love a surprise? We're implementing Pyth Entropy to randomly select donations to receive awesome bonuses, like unique NFT tokens on Flow! It's our way of adding an extra dash of excitement and giving back to our amazing community of givers.
+
+* **Add Your Personal Sprinkle (Messages That Stick!):**
+    A donation is sweet, but a donation with a lasting message? That's even sweeter! Soon, fans will be able to attach messages to their "donnuts" that will be stored permanently and transparently on Filecoin. Your words of encouragement and support will be preserved forever on the blockchain!
+
+* **And More Toppings Coming Soon...** 🎨
+    Stay tuned! We're always cooking up new features and improvements. Got a sweet idea for Donnut? We'd love to hear it! Our kitchen is always open for suggestions to make the platform even more delightful.
+
+---
+
 ## Join the Donnut Movement! 🚀
 
 Whether you're a fan eager to share some love, or a creator ready to receive support in the simplest way possible, Donnut is for you.
