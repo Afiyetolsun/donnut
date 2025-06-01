@@ -3,7 +3,8 @@
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { usePrivy } from '@privy-io/react-auth';
-import { TokenSelector } from '@/components/TokenSelector';
+import { TokenSelector, SelectedTokenInfo } from '@/components/TokenSelector'; // Modified
+import { CrossChainForm } from '@/components/CrossChainForm';
 import { ArrowDown, Copy, Gift, Menu } from 'lucide-react';
 import Link from 'next/link';
 import { WalletButton } from '@/components/WalletButton';
@@ -16,12 +17,12 @@ interface PaymentPageClientProps {
 
 export default function PaymentPageClient({ linkId }: PaymentPageClientProps) {
   const { user, authenticated, login } = usePrivy();
-  const [walletAddress, setWalletAddress] = useState<string | null>(null);
+  const [walletAddress, setWalletAddress] = useState<string | null>(null); // This is the RECIPIENT address
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [amount, setAmount] = useState('');
-  const [selectedToken, setSelectedToken] = useState('');
-  const [selectedChain, setSelectedChain] = useState(1);
+  const [selectedTokenInfo, setSelectedTokenInfo] = useState<SelectedTokenInfo | null>(null); // Changed state
+  const [selectedChain, setSelectedChain] = useState(1); // This is srcChainId
   const [message, setMessage] = useState('');
 
   useEffect(() => {
@@ -158,16 +159,16 @@ export default function PaymentPageClient({ linkId }: PaymentPageClientProps) {
     );
   }
 
-  const handleDonate = () => {
-    // TODO: Implement actual donation logic
-    console.log('Donating:', {
-      amount,
-      token: selectedToken,
-      chain: selectedChain,
-      recipient: walletAddress,
-      message,
-    });
-  };
+  // const handleDonate = () => { // Old handler removed
+  //   // TODO: Implement actual donation logic
+  //   console.log('Donating:', {
+  //     amount,
+  //     token: selectedToken,
+  //     chain: selectedChain,
+  //     recipient: walletAddress,
+  //     message,
+  //   });
+  // };
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: "#F5E6CC" }}>
@@ -208,7 +209,7 @@ export default function PaymentPageClient({ linkId }: PaymentPageClientProps) {
             <div className="space-y-6">
               <TokenSelector
                 onAmountChange={setAmount}
-                onTokenChange={setSelectedToken}
+                onTokenChange={setSelectedTokenInfo} // Changed
                 onChainChange={setSelectedChain}
               />
 
@@ -255,14 +256,17 @@ export default function PaymentPageClient({ linkId }: PaymentPageClientProps) {
                 </div>
               </div>
 
-              <Button
-                onClick={handleDonate}
-                className="w-full rounded-full px-8 py-6 text-lg font-semibold text-white shadow-xl transition-all duration-200 transform hover:scale-105 hover:shadow-2xl"
-                style={{ backgroundColor: "#A076F9" }}
-                disabled={!amount || !selectedToken}
-              >
-                Send Donnut
-              </Button>
+              {/* Replaced Button with CrossChainForm */}
+              {walletAddress && ( // Ensure walletAddress (receiver) is loaded before rendering
+                <CrossChainForm
+                  receiverAddress={walletAddress}
+                  srcChainIdFromTokenSelector={selectedChain}
+                  srcTokenAddressFromTokenSelector={selectedTokenInfo?.address || ''}
+                  srcTokenSymbol={selectedTokenInfo?.symbol || ''}
+                  srcTokenDecimals={selectedTokenInfo?.decimals || 0} // Added
+                  amount={amount}
+                />
+              )}
             </div>
           </div>
         </div>

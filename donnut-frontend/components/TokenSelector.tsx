@@ -13,7 +13,7 @@ import { useWallets } from '@privy-io/react-auth';
 import { toast } from 'sonner';
 import { SUPPORTED_CHAINS, Chain } from '@/lib/chains';
 
-interface Token {
+interface Token { // This is the full token info fetched
   address: string;
   symbol: string;
   name: string;
@@ -21,9 +21,15 @@ interface Token {
   balance: string;
 }
 
+export interface SelectedTokenInfo { // This is what we'll pass to the parent
+  address: string;
+  decimals: number;
+  symbol: string;
+}
+
 interface TokenSelectorProps {
   onAmountChange: (amount: string) => void;
-  onTokenChange: (token: string) => void;
+  onTokenChange: (token: SelectedTokenInfo | null) => void; // Changed
   onChainChange: (chainId: number) => void;
 }
 
@@ -120,8 +126,9 @@ export function TokenSelector({ onAmountChange, onTokenChange, onChainChange }: 
         
         // Set the first token as selected if none is selected
         if (!selectedToken && processedTokens.length > 0) {
-          setSelectedToken(processedTokens[0]);
-          onTokenChange(processedTokens[0].address);
+          const firstToken = processedTokens[0];
+          setSelectedToken(firstToken);
+          onTokenChange({ address: firstToken.address, decimals: firstToken.decimals, symbol: firstToken.symbol });
         }
       } catch (error) {
         console.error('Error fetching token balances:', error);
@@ -187,7 +194,9 @@ export function TokenSelector({ onAmountChange, onTokenChange, onChainChange }: 
     const token = tokens.find(t => t.address === tokenAddress);
     if (token) {
       setSelectedToken(token);
-      onTokenChange(tokenAddress);
+      onTokenChange({ address: token.address, decimals: token.decimals, symbol: token.symbol });
+    } else {
+      onTokenChange(null); // Should not happen if tokenAddress is from the list
     }
   };
 
