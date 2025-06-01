@@ -13,24 +13,12 @@ import { useWallets } from '@privy-io/react-auth';
 import { toast } from 'sonner';
 import { SUPPORTED_CHAINS, Chain } from '@/lib/chains';
 
-// Cache for token prices
-const priceCache: {
-  native: { [key: string]: { price: number; timestamp: number } };
-  tokens: { [key: string]: { price: number; timestamp: number } };
-} = {
-  native: {},
-  tokens: {},
-};
-
-const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes in milliseconds
-
 interface Token {
   address: string;
   symbol: string;
   name: string;
   decimals: number;
   balance: string;
-  usdValue?: string;
 }
 
 interface TokenSelectorProps {
@@ -47,145 +35,6 @@ export function TokenSelector({ onAmountChange, onTokenChange, onChainChange }: 
   const [amount, setAmount] = useState('');
   const [previousChainId, setPreviousChainId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-
-  // Function to fetch token prices from CoinGecko with caching
-  const fetchTokenPrices = async (tokens: Token[], chain: Chain) => {
-    try {
-      const now = Date.now();
-      let nativePrice = 0;
-
-      // Check cache for native token price
-      if (priceCache.native[chain.coingeckoId] && 
-          now - priceCache.native[chain.coingeckoId].timestamp < CACHE_DURATION) {
-        nativePrice = priceCache.native[chain.coingeckoId].price;
-      } else {
-        try {
-          const nativePriceResponse = await fetch(
-            `https://api.coingecko.com/api/v3/simple/price?ids=${chain.coingeckoId}&vs_currencies=usd`
-          );
-          if (!nativePriceResponse.ok) {
-            throw new Error('Failed to fetch native token price');
-          }
-          const nativePriceData = await nativePriceResponse.json();
-          nativePrice = nativePriceData[chain.coingeckoId]?.usd || 0;
-          
-          // Update cache
-          priceCache.native[chain.coingeckoId] = {
-            price: nativePrice,
-            timestamp: now
-          };
-        } catch (error) {
-          console.error('Error fetching native token price:', error);
-          // Try to use cached price even if expired
-          if (priceCache.native[chain.coingeckoId]) {
-            nativePrice = priceCache.native[chain.coingeckoId].price;
-          }
-        }
-      }
-
-      // Get ERC20 token prices
-      const tokenAddresses = tokens
-        .filter(t => t.address !== '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee')
-        .map(t => t.address.toLowerCase());
-      
-      let tokenPricesData: { [key: string]: { usd: number } } = {};
-      
-      if (tokenAddresses.length > 0) {
-        // Filter out tokens that have valid cached prices
-        const uncachedAddresses = tokenAddresses.filter(addr => 
-          !priceCache.tokens[addr] || 
-          now - priceCache.tokens[addr].timestamp >= CACHE_DURATION
-        );
-
-        if (uncachedAddresses.length > 0) {
-          try {
-            // Map chain IDs to CoinGecko network IDs
-            const networkMap: { [key: number]: string } = {
-              1: 'ethereum',
-              137: 'polygon-pos',
-              42161: 'arbitrum-one',
-              10: 'optimistic-ethereum'
-            };
-
-            const networkId = networkMap[chain.id] || 'ethereum';
-            const tokenPricesResponse = await fetch(
-              `https://api.coingecko.com/api/v3/simple/token_price/${networkId}?contract_addresses=${uncachedAddresses.join(',')}&vs_currencies=usd`
-            );
-            
-            if (!tokenPricesResponse.ok) {
-              throw new Error('Failed to fetch token prices');
-            }
-            const newPrices = await tokenPricesResponse.json();
-            
-            // Update cache with new prices
-            Object.entries(newPrices).forEach(([addr, data]) => {
-              priceCache.tokens[addr] = {
-                price: (data as { usd: number }).usd,
-                timestamp: now
-              };
-            });
-          } catch (error) {
-            console.error('Error fetching ERC20 token prices:', error);
-            // If price fetch fails for a specific network, try Ethereum as fallback
-            if (chain.id !== 1) {
-              try {
-                const fallbackResponse = await fetch(
-                  `https://api.coingecko.com/api/v3/simple/token_price/ethereum?contract_addresses=${uncachedAddresses.join(',')}&vs_currencies=usd`
-                );
-                if (fallbackResponse.ok) {
-                  const fallbackPrices = await fallbackResponse.json();
-                  Object.entries(fallbackPrices).forEach(([addr, data]) => {
-                    priceCache.tokens[addr] = {
-                      price: (data as { usd: number }).usd,
-                      timestamp: now
-                    };
-                  });
-                }
-              } catch (fallbackError) {
-                console.error('Error fetching fallback token prices:', fallbackError);
-              }
-            }
-          }
-        }
-
-        // Combine cached and new prices
-        tokenPricesData = tokenAddresses.reduce((acc, addr) => {
-          if (priceCache.tokens[addr]) {
-            acc[addr] = { usd: priceCache.tokens[addr].price };
-          }
-          return acc;
-        }, {} as { [key: string]: { usd: number } });
-      }
-
-      // Update tokens with USD values and filter out low-value tokens
-      const MIN_USD_VALUE = 0.5; // Minimum USD value to show token
-      const updatedTokens = tokens
-        .map(token => {
-          if (token.address === '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee') {
-            // Native token
-            const usdValue = (Number(token.balance) * nativePrice).toFixed(2);
-            return { ...token, usdValue };
-          } else {
-            // ERC20 token
-            const price = tokenPricesData[token.address.toLowerCase()]?.usd || 0;
-            const usdValue = (Number(token.balance) * price).toFixed(2);
-            return { ...token, usdValue };
-          }
-        })
-        .filter(token => {
-          const usdValue = Number(token.usdValue || 0);
-          return usdValue >= MIN_USD_VALUE;
-        });
-
-      return updatedTokens;
-    } catch (error) {
-      console.error('Error in fetchTokenPrices:', error);
-      // Return only native token if available
-      return tokens.filter(token => 
-        token.address === '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'
-      );
-    }
-  };
 
   // Function to fetch token balances using Blockscout API
   const fetchTokenBalances = async (address: string, chainId: number) => {
@@ -255,31 +104,24 @@ export function TokenSelector({ onAmountChange, onTokenChange, onChainChange }: 
           }
         }
 
-        // Fetch USD prices and update tokens
-        const tokensWithPrices = await fetchTokenPrices(processedTokens, chain);
+        // Sort tokens by balance (highest to lowest)
+        processedTokens.sort((a, b) => Number(b.balance) - Number(a.balance));
 
-        // Sort tokens by USD value (highest to lowest)
-        tokensWithPrices.sort((a, b) => {
-          const valueA = Number(a.usdValue || 0);
-          const valueB = Number(b.usdValue || 0);
-          return valueB - valueA;
-        });
-
-        console.log('Final processed tokens:', tokensWithPrices);
+        console.log('Final processed tokens:', processedTokens);
         
-        if (tokensWithPrices.length === 0) {
+        if (processedTokens.length === 0) {
           console.log('No tokens found with balance > 0');
           setTokens([]);
           setSelectedToken(null);
           return;
         }
 
-        setTokens(tokensWithPrices);
+        setTokens(processedTokens);
         
         // Set the first token as selected if none is selected
-        if (!selectedToken && tokensWithPrices.length > 0) {
-          setSelectedToken(tokensWithPrices[0]);
-          onTokenChange(tokensWithPrices[0].address);
+        if (!selectedToken && processedTokens.length > 0) {
+          setSelectedToken(processedTokens[0]);
+          onTokenChange(processedTokens[0].address);
         }
       } catch (error) {
         console.error('Error fetching token balances:', error);
@@ -396,9 +238,6 @@ export function TokenSelector({ onAmountChange, onTokenChange, onChainChange }: 
                   <div className="flex items-center justify-between w-full">
                     <div className="flex flex-col">
                       <span style={{ color: "#5D4037" }}>{token.symbol}</span>
-                      {token.usdValue && (
-                        <span className="text-xs text-gray-500">${token.usdValue}</span>
-                      )}
                     </div>
                     <span className="text-sm ml-4" style={{ color: "#A076F9" }}>
                       Balance: {token.balance}
